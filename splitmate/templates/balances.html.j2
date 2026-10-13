@@ -1,0 +1,36 @@
+<section class="card">
+  <h1>{{ t("balance.title") }} — {{ group.name }}</h1>
+  <ul class="list">
+    {% for pid, bal in balances.items() %}
+      <li>
+        <span>{{ members_by_id[pid].display_name|e }}</span>
+        <span>
+          {% if bal > 0 %}{{ t("balance.owed", name="", amount=format_amount(bal, group.currency_symbol)) }}
+          {% elif bal < 0 %}{{ t("balance.owes", name="", amount=format_amount(-bal, group.currency_symbol)) }}
+          {% else %}—{% endif %}
+        </span>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="card">
+  <h2>{{ t("settle.title") }} — {{ t("settle.plan") }}</h2>
+  {% if not plan %}
+    <p>{{ t("balance.settled") }}</p>
+  {% else %}
+    <ol>
+      {% for (f, to, amt) in plan %}
+        <li>
+          {{ members_by_id[f].display_name|e }}
+          →
+          {{ members_by_id[to].display_name|e }}:
+          <strong>{{ format_amount(amt, group.currency_symbol) }}</strong>
+        </li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+  <p>
+    <a class="btn" href="/groups/{{ group.id }}/settle">{{ t("settle.record") }}</a>
+  </p>
+</section>

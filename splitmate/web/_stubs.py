@@ -39,52 +39,9 @@ def _stub_html(request: Request, group: Group, member: Member, label: str) -> HT
     return HTMLResponse(body)
 
 
-# Milestones M5+ still have no real implementation; their stubs are
-# mounted.  M4 (expenses) is now implemented, so we do **not** mount
-# the ``expenses_router`` stub here — ``main._register_milestone_routers``
-# mounts the real one.
-
-balances_router = APIRouter()
-
-
-@balances_router.get("/groups/{group_id}/balances")
-def balances(
-    group_id: int,
-    request: Request,
-    session: Session = Depends(get_session),
-    group_member: tuple[Group, Member] = Depends(require_member),
-) -> HTMLResponse:
-    lang = get_lang(request)
-    return HTMLResponse(
-        render(
-            "base.html.j2",
-            {"lang": lang},
-            block_title="Balances",
-            content="<section class='card'><h1>Balances (M5)</h1></section>",
-        )
-    )
-
-
-settlements_router = APIRouter()
-
-
-@settlements_router.get("/groups/{group_id}/settle")
-def settle(
-    group_id: int,
-    request: Request,
-    session: Session = Depends(get_session),
-    group_member: tuple[Group, Member] = Depends(require_member),
-) -> HTMLResponse:
-    lang = get_lang(request)
-    return HTMLResponse(
-        render(
-            "base.html.j2",
-            {"lang": lang},
-            block_title="Settle up",
-            content="<section class='card'><h1>Settle up (M5)</h1></section>",
-        )
-    )
-
+# Milestones M6 / M7 still have no real implementation; their stubs
+# are mounted.  M4 (expenses) and M5 (balances + settlements) are
+# implemented, so their stubs are intentionally not registered.
 
 activity_router = APIRouter()
 

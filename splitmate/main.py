@@ -160,11 +160,10 @@ def _register_milestone_routers(app: FastAPI) -> None:
     try:
         from .web import _stubs as _stubs
 
-        # Note: the expenses stub is intentionally NOT registered
-        # because the real expenses router (M4) exists.  Mounting
-        # both would let the stub's identical path win.
-        app.include_router(_stubs.balances_router)
-        app.include_router(_stubs.settlements_router)
+        # Note: the expenses / balances / settlements stubs are
+        # intentionally NOT registered because their real routers
+        # exist.  Mounting both would let the stub's identical path
+        # win.
         app.include_router(_stubs.activity_router)
         app.include_router(_stubs.share_router)
     except Exception:  # pragma: no cover

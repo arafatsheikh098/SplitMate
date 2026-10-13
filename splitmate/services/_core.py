@@ -495,10 +495,14 @@ def consume_relink_code(
 
 
 def compute_member_balance(session: Session, *, group_id: int, member_id: int) -> int:
-    """Net balance in minor units: paid − owed (expenses) + received − sent (settlements).
+    """Net balance in minor units: paid − owed (expenses) − received + sent (settlements).
 
     Returns an integer that can be negative (the member owes) or positive
     (the member is owed).  Excludes soft-deleted expenses / settlements.
+
+    The settlement signs reflect that *receiving* money reduces what
+    others owe you (balance goes down), while *sending* money increases
+    what others owe you (balance goes up).
     """
     # Payer side
     paid_rows = session.exec(
@@ -545,7 +549,7 @@ def compute_member_balance(session: Session, *, group_id: int, member_id: int) -
             )
         ).all()
     )
-    return int(paid - owed - sent + received)
+    return int(paid - owed - received + sent)
 
 
 __all__ = [
