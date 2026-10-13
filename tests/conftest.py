@@ -1,7 +1,9 @@
 """Shared pytest fixtures.
 
-We isolate tests by giving each a brand-new in-memory SQLite database and
-resetting cached engines / translation caches between tests.
+We isolate tests by giving each a brand-new file-backed SQLite database
+and resetting cached engines / translation caches between tests.  A
+file-based URL (in a tmp path) means the schema is shared across all
+connections in the pool, unlike ``:memory:``.
 """
 
 from __future__ import annotations
@@ -12,9 +14,8 @@ from pathlib import Path
 
 import pytest
 
-# Use an in-memory SQLite database by default.  CI sets DATABASE_URL to
-# Postgres explicitly.
-os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+# Default to a file in /tmp so multiple connections see the same data.
+# CI sets DATABASE_URL to Postgres explicitly.
 os.environ.setdefault("ENV", "testing")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-for-tests-only")
 
@@ -25,12 +26,18 @@ if str(ROOT) not in os.sys.path:
 
 
 @pytest.fixture(autouse=True)
-def _isolate_engine() -> Iterator[None]:
+def _isolate_engine(tmp_path) -> Iterator[None]:
+    db_path = tmp_path / "splitmate.db"
+    os.environ["DATABASE_URL"] = f"sqlite:///{db_path}"
+
     from splitmate import db
     from splitmate.i18n import reload_translations
     from splitmate.templates import reset_for_tests
 
-    # Reset any cached engine and create fresh schema.
+    # Reset any cached engine and create the schema via SQLAlchemy so
+    # each test starts from a clean slate.  Tests that exercise
+    # migrations explicitly drop the file first to avoid the duplicate
+    # "table already exists" error.
     db.reset_engine_for_tests()
     db.create_all()
     reload_translations()

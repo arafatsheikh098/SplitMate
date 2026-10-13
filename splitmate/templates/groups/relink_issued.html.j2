@@ -1,0 +1,7 @@
+{% set t = t %}
+<section class="card">
+  <h1>re-link code for {{ member.display_name }}</h1>
+  <p>Send this link to <strong>{{ member.display_name }}</strong> on their new device. It works once and expires in 24 hours.</p>
+  <p><code>/rejoin/{{ group.id }}/{{ code }}</code></p>
+  <p><a class="btn" href="/groups/{{ group.id }}">{{ t("error.back_home") }}</a></p>
+</section>

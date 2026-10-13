@@ -5,10 +5,9 @@ Every entity in SCOPE.md is represented here. Behaviour (F1–F7) lives in
 declares schema.
 """
 
-from __future__ import annotations
-
 import enum
 from datetime import UTC, date, datetime
+from typing import Optional
 
 from sqlalchemy import Column, DateTime, UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
@@ -84,23 +83,23 @@ class Group(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False),
     )
 
-    members: list[Member] = Relationship(
+    members: list["Member"] = Relationship(
         back_populates="group",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
-    expenses: list[Expense] = Relationship(
+    expenses: list["Expense"] = Relationship(
         back_populates="group",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
-    settlements: list[Settlement] = Relationship(
+    settlements: list["Settlement"] = Relationship(
         back_populates="group",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
-    activity: list[Activity] = Relationship(
+    activity: list["Activity"] = Relationship(
         back_populates="group",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
-    rejoin_codes: list[RejoinCode] = Relationship(
+    rejoin_codes: list["RejoinCode"] = Relationship(
         back_populates="group",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
@@ -113,7 +112,6 @@ class Member(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     group_id: int = Field(foreign_key="group.id", index=True)
     display_name: str = Field(max_length=60)
-    # Case-insensitive normalised form of display_name for uniqueness checks.
     name_ci: str = Field(max_length=60, index=True)
     is_admin: bool = Field(default=False)
     is_virtual: bool = Field(default=False)
@@ -123,7 +121,7 @@ class Member(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False),
     )
 
-    group: Group | None = Relationship(back_populates="members")
+    group: Optional["Group"] = Relationship(back_populates="members")
 
 
 class RejoinCode(SQLModel, table=True):
@@ -147,7 +145,7 @@ class RejoinCode(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=True),
     )
 
-    group: Group | None = Relationship(back_populates="rejoin_codes")
+    group: Optional["Group"] = Relationship(back_populates="rejoin_codes")
 
 
 class Expense(SQLModel, table=True):
@@ -157,11 +155,11 @@ class Expense(SQLModel, table=True):
     group_id: int = Field(foreign_key="group.id", index=True)
     creator_id: int = Field(foreign_key="member.id")
     title: str = Field(max_length=100)
-    amount_minor: int = Field(ge=0)  # integer minor units (e.g. paisa)
+    amount_minor: int = Field(ge=0)
     occurred_on: date
-    category: Category = Field(default=Category.OTHER)
+    category: str = Field(default=Category.OTHER.value)
     note: str | None = Field(default=None, max_length=300)
-    split_method: SplitMethod
+    split_method: str
     deleted_at: datetime | None = Field(
         default=None,
         sa_column=Column(DateTime(timezone=True), nullable=True),
@@ -171,12 +169,12 @@ class Expense(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False),
     )
 
-    group: Group | None = Relationship(back_populates="expenses")
-    payers: list[Payer] = Relationship(
+    group: Optional["Group"] = Relationship(back_populates="expenses")
+    payers: list["Payer"] = Relationship(
         back_populates="expense",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
-    parts: list[SplitPart] = Relationship(
+    parts: list["SplitPart"] = Relationship(
         back_populates="expense",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
@@ -190,7 +188,7 @@ class Payer(SQLModel, table=True):
     member_id: int = Field(foreign_key="member.id")
     amount_minor: int = Field(ge=0)
 
-    expense: Expense | None = Relationship(back_populates="payers")
+    expense: Optional["Expense"] = Relationship(back_populates="payers")
 
 
 class SplitPart(SQLModel, table=True):
@@ -205,10 +203,9 @@ class SplitPart(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     expense_id: int = Field(foreign_key="expense.id", index=True)
     member_id: int = Field(foreign_key="member.id")
-    # Always non-negative.
     amount_minor: int = Field(ge=0)
 
-    expense: Expense | None = Relationship(back_populates="parts")
+    expense: Optional["Expense"] = Relationship(back_populates="parts")
 
 
 class Settlement(SQLModel, table=True):
@@ -220,7 +217,7 @@ class Settlement(SQLModel, table=True):
     from_member_id: int = Field(foreign_key="member.id")
     to_member_id: int = Field(foreign_key="member.id")
     amount_minor: int = Field(ge=0)
-    method: SettlementMethod = Field(default=SettlementMethod.OTHER)
+    method: str = Field(default=SettlementMethod.OTHER.value)
     paid_on: date
     note: str | None = Field(default=None, max_length=300)
     deleted_at: datetime | None = Field(
@@ -232,7 +229,7 @@ class Settlement(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False),
     )
 
-    group: Group | None = Relationship(back_populates="settlements")
+    group: Optional["Group"] = Relationship(back_populates="settlements")
 
 
 class Activity(SQLModel, table=True):
@@ -243,15 +240,14 @@ class Activity(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     group_id: int = Field(foreign_key="group.id", index=True)
     actor_id: int | None = Field(default=None, foreign_key="member.id")
-    kind: ActivityKind
-    # Free-form small summary (before / after); also used for the entity id.
+    kind: str
     summary: str = Field(max_length=500)
     created_at: datetime = Field(
         default_factory=_utcnow,
         sa_column=Column(DateTime(timezone=True), nullable=False),
     )
 
-    group: Group | None = Relationship(back_populates="activity")
+    group: Optional["Group"] = Relationship(back_populates="activity")
 
 
 class IdempotencyKey(SQLModel, table=True):

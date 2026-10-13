@@ -1,0 +1,77 @@
+{% set t = t %}
+<section class="card">
+  <h1>{{ group.name }} <span class="badge">{{ group.currency_symbol }}</span></h1>
+  {% if current_member %}
+    <p class="muted">Signed in as <strong>{{ current_member.display_name }}</strong>
+    {% if current_member.is_admin %}<span class="badge">admin</span>{% endif %}
+    <form method="post" action="/logout" style="display:inline">
+      <button class="link" type="submit">{{ t("nav.groups") }} — logout</button>
+    </form>
+    </p>
+  {% endif %}
+</section>
+
+{% if current_member and current_member.is_admin %}
+<section class="card">
+  <h2>{{ t("group.invite.title") }}</h2>
+  <form method="post" action="/groups/{{ group.id }}/invite/rotate" style="display:inline">
+    <button type="submit">{{ t("group.invite.rotate") }}</button>
+  </form>
+  <form method="post" action="/groups/{{ group.id }}/invite/revoke" style="display:inline">
+    <button class="secondary" type="submit">{{ t("group.invite.revoke") }}</button>
+  </form>
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>{{ t("group.members.title") }}</h2>
+  <ul class="list">
+    {% for m in members %}
+    <li>
+      <div>
+        <strong>{{ m.display_name }}</strong>
+        {% if m.archived %}<span class="badge warn">archived</span>{% endif %}
+        {% if m.is_virtual %}<span class="badge warn">virtual</span>{% endif %}
+        {% if m.is_admin %}<span class="badge">admin</span>{% endif %}
+        {% if balances and balances.get(m.id, 0) != 0 %}
+          <span class="muted">
+            {% set bal = balances[m.id] %}
+            {% if bal > 0 %}{{ t("balance.owed", name="", amount=bal) }}{% else %}{{ t("balance.owes", name="", amount=-bal) }}{% endif %}
+          </span>
+        {% endif %}
+      </div>
+      {% if current_member and current_member.is_admin %}
+      <div class="row">
+        {% if m.is_admin and m.id != current_member.id %}
+        <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/demote">
+          <button class="secondary" type="submit">{{ t("group.members.demote") }}</button>
+        </form>
+        {% elif not m.is_admin %}
+        <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/promote">
+          <button class="secondary" type="submit">{{ t("group.members.promote") }}</button>
+        </form>
+        {% endif %}
+        <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/relink">
+          <button class="secondary" type="submit">re-link</button>
+        </form>
+        {% if m.archived %}
+        <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/restore">
+          <button class="secondary" type="submit">{{ t("group.members.restore") }}</button>
+        </form>
+        {% else %}
+        <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/archive">
+          <button class="secondary" type="submit">{{ t("group.members.archive") }}</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% if current_member and current_member.is_admin %}
+  <form method="post" action="/groups/{{ group.id }}/members/virtual" class="row" style="margin-top:.5rem">
+    <input name="display_name" maxlength="60" required placeholder="Display name">
+    <button class="secondary" type="submit">{{ t("group.members.add_virtual") }}</button>
+  </form>
+  {% endif %}
+</section>

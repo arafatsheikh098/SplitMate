@@ -1,0 +1,20 @@
+{% set t = t %}
+<section class="card">
+  <h1>{{ t("group.create.title") }}</h1>
+  <form method="post" action="/groups/new" class="col">
+    <label>
+      {{ t("group.create.name_label") }}
+      <input name="name" maxlength="100" required value="{{ values.name|e }}">
+    </label>
+    <label>
+      {{ t("group.create.currency_label") }}
+      <input name="currency_symbol" maxlength="8" required value="{{ values.currency_symbol|e }}">
+    </label>
+    <label>
+      {{ t("group.join.name_label") }}
+      <input name="admin_name" maxlength="60" required value="{{ values.admin_name|e }}">
+    </label>
+    {% if errors.form %}<p class="error">{{ errors.form }}</p>{% endif %}
+    <p><button type="submit">{{ t("group.create.submit") }}</button></p>
+  </form>
+</section>

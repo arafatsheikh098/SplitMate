@@ -1,0 +1,12 @@
+{% set t = t %}
+<section class="card">
+  <h1>{{ t("group.join.title") }} — {{ group.name }}</h1>
+  <form method="post" action="/join/{{ token }}" class="col">
+    <label>
+      {{ t("group.join.name_label") }}
+      <input name="display_name" maxlength="60" required>
+    </label>
+    {% if errors.name %}<p class="error">{{ errors.name }}</p>{% endif %}
+    <p><button type="submit">{{ t("group.join.submit") }}</button></p>
+  </form>
+</section>

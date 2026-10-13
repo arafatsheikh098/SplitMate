@@ -154,8 +154,19 @@ def _register_milestone_routers(app: FastAPI) -> None:
     except Exception:  # pragma: no cover - milestone boundary
         pass
     try:
+        from .web import _stubs as _stubs
+
+        app.include_router(_stubs.expenses_router)
+        app.include_router(_stubs.balances_router)
+        app.include_router(_stubs.settlements_router)
+        app.include_router(_stubs.activity_router)
+        app.include_router(_stubs.share_router)
+    except Exception:  # pragma: no cover
+        pass
+    try:
         from .web import expenses as _expenses
 
+        # Replace stub with real router when milestone lands.
         app.include_router(_expenses.router)
     except Exception:  # pragma: no cover
         pass
@@ -185,8 +196,11 @@ def _register_milestone_routers(app: FastAPI) -> None:
         pass
 
 
-# Convenience for ``uvicorn splitmate.main:app`` and ASGI servers.
-app = create_app()
+# For ``uvicorn splitmate.main:app`` we expose ``app`` as a callable that
+# defers to ``create_app()``.  This lets the process import this module
+# without instantiating the engine, so tests can swap ``DATABASE_URL``
+# before any database connection is made.
+app = create_app
 
 
 def main() -> None:  # pragma: no cover

@@ -1,0 +1,8 @@
+{% set t = t %}
+<section class="card">
+  <h1>{{ t("group.invite.title") }}</h1>
+  {% if rotated %}<p class="muted">rotated</p>{% endif %}
+  <p>Share this link to invite people:</p>
+  <p><code>/join/{{ invite }}</code></p>
+  <p><a class="btn" href="/groups/{{ group.id }}">{{ t("error.back_home") }}</a></p>
+</section>

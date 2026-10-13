@@ -65,3 +65,8 @@ def reset_engine_for_tests() -> None:
     if _engine is not None:
         _engine.dispose()
     _engine = None
+    # Also drop the cached settings so the next call reads the updated
+    # environment (e.g. a tmp-path DATABASE_URL).
+    from .config import get_settings
+
+    get_settings.cache_clear()
