@@ -6,10 +6,13 @@ Refer to ``.env.example`` for the full list.
 
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_PLACEHOLDER_SECRET = "change-me-in-production-at-least-32-bytes-random"
 
 
 class Settings(BaseSettings):
@@ -23,7 +26,7 @@ class Settings(BaseSettings):
     )
 
     env: str = "development"
-    secret_key: str = Field(default="change-me-in-production-at-least-32-bytes-random")
+    secret_key: str = Field(default=_PLACEHOLDER_SECRET)
     app_name: str = "SplitMate"
     default_language: str = "en"
     session_cookie_name: str = "splitmate_session"
@@ -45,6 +48,24 @@ class Settings(BaseSettings):
     relink_max_attempts: int = 5
     relink_window_seconds: int = 60 * 15
 
+    @field_validator("secret_key")
+    @classmethod
+    def _check_secret_key(cls, value: str) -> str:
+        # In production the operator MUST set a real key — never the
+        # placeholder that ships in .env.example.
+        if os.environ.get("ENV", "").lower() == "production":
+            if value == _PLACEHOLDER_SECRET or not value:
+                raise ValueError(
+                    "SECRET_KEY must be set to a real value in production. "
+                    "Generate one with: python -c 'import secrets; "
+                    "print(secrets.token_urlsafe(32))'"
+                )
+            if len(value) < 32:
+                raise ValueError(
+                    "SECRET_KEY must be at least 32 characters of random data."
+                )
+        return value
+
     @property
     def is_production(self) -> bool:
         return self.env.lower() == "production"
@@ -58,3 +79,4 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
