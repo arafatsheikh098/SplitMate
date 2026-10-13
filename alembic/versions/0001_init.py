@@ -41,9 +41,9 @@ def upgrade() -> None:
         sa.Column("group_id", sa.Integer(), sa.ForeignKey("group.id"), nullable=False),
         sa.Column("display_name", sa.String(length=60), nullable=False),
         sa.Column("name_ci", sa.String(length=60), nullable=False),
-        sa.Column("is_admin", sa.Boolean(), nullable=False, server_default=sa.text("0")),
-        sa.Column("is_virtual", sa.Boolean(), nullable=False, server_default=sa.text("0")),
-        sa.Column("archived", sa.Boolean(), nullable=False, server_default=sa.text("0")),
+        sa.Column("is_admin", sa.Boolean(), nullable=False, server_default=sa.false()),
+        sa.Column("is_virtual", sa.Boolean(), nullable=False, server_default=sa.false()),
+        sa.Column("archived", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.UniqueConstraint("group_id", "name_ci", name="uq_member_group_name"),
     )

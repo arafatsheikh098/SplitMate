@@ -28,7 +28,7 @@ downgrade:
 	$(PY) -m alembic downgrade -1
 
 run:
-	$(PY) -m uvicorn splitmate.main:app --reload --host 0.0.0.0 --port 8000
+	$(PY) -m uvicorn splitmate.main:app --reload --host 0.0.0.0 --port 8000 --factory
 
 clean:
 	rm -rf .pytest_cache .ruff_cache .coverage htmlcov __pycache__ */__pycache__ *.db

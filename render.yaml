@@ -8,7 +8,7 @@ services:
     startCommand: |
       alembic upgrade head &&
       python -m splitmate.seed &&
-      uvicorn splitmate.main:app --host 0.0.0.0 --port $PORT
+      uvicorn splitmate.main:app --host 0.0.0.0 --port $PORT --factory
     envVars:
       - key: ENV
         value: production

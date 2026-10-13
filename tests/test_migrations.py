@@ -23,8 +23,9 @@ def test_upgrade_and_downgrade_on_sqlite(tmp_path) -> None:
         env=env,
         cwd=repo_root,
     )
-    with open("/tmp/alembic.log", "w") as fh:
-        fh.write(f"rc={res.returncode}\nstdout={res.stdout}\nstderr={res.stderr}\n")
+    (tmp_path / "alembic.log").write_text(
+        f"rc={res.returncode}\nstdout={res.stdout}\nstderr={res.stderr}\n"
+    )
     assert res.returncode == 0, res.stderr
     # Downgrade
     res = subprocess.run(

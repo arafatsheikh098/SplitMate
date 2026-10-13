@@ -43,6 +43,9 @@ jobs:
       - name: Lint
         run: python -m ruff check .
 
+      - name: Install Playwright browsers
+        run: playwright install --with-deps chromium
+
       - name: Migrate (up)
         run: python -m alembic upgrade head
 
