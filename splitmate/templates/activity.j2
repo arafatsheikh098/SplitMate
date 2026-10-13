@@ -1,0 +1,30 @@
+<section class="card">
+  <h1>{{ t("activity.title") }} — {{ group.name }}</h1>
+  {% if not activities %}
+    <p class="muted">No activity yet.</p>
+  {% else %}
+    <ul class="list">
+      {% for a in activities %}
+        <li>
+          <div>
+            <strong>{{ a.kind }}</strong>
+            {% if a.actor_id and members_by_id.get(a.actor_id) %}
+              <span class="muted">by {{ members_by_id[a.actor_id].display_name|e }}</span>
+            {% endif %}
+            <p>{{ a.summary|e }}</p>
+          </div>
+          <span class="muted">{{ a.created_at }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <p>
+    {% if page > 1 %}
+      <a class="secondary" href="?page={{ page - 1 }}&page_size={{ page_size }}">‹ prev</a>
+    {% endif %}
+    <span class="muted">page {{ page }} of {{ (total + page_size - 1) // page_size }}</span>
+    {% if page * page_size < total %}
+      <a class="secondary" href="?page={{ page + 1 }}&page_size={{ page_size }}">next ›</a>
+    {% endif %}
+  </p>
+</section>

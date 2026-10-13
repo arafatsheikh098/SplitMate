@@ -355,8 +355,26 @@ def create_expense(
     creator_id: int,
     data: Mapping[str, Any],
     split_overrides: Mapping[int, int] | None = None,
+    idempotency_key: str | None = None,
 ) -> Expense:
-    """Validate ``data`` and create the expense + payers + split parts."""
+    """Validate ``data`` and create the expense + payers + split parts.
+
+    If ``idempotency_key`` is provided and matches an earlier call
+    from the same ``(group, member)``, the original expense is
+    returned without creating a duplicate (F3 / M6 A4).
+    """
+    if idempotency_key:
+        from .idempotency import lookup_expense, reserve_key
+
+        existing = lookup_expense(
+            session,
+            group_id=group_id,
+            member_id=creator_id,
+            key=idempotency_key,
+        )
+        if existing is not None:
+            return existing
+
     _check_group_expense_limit(session, group_id)
     draft = validate_draft(session, group_id=group_id, data=data)
     split_amounts = _compute_split(
@@ -394,6 +412,16 @@ def create_expense(
             ),
         )
     )
+    if idempotency_key:
+        from .idempotency import reserve_key
+
+        reserve_key(
+            session,
+            group_id=group_id,
+            member_id=creator_id,
+            key=idempotency_key,
+            expense_id=expense.id,
+        )
     session.commit()
     session.refresh(expense)
     return expense
