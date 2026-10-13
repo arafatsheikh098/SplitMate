@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <title>{% block title %}{{ t("app.title") }}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/vendor/htmx.min.js" defer></script>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">{{ t("app.title") }}</a>
+    <nav class="topnav">
+      {% block topnav %}{% endblock %}
+      <form action="/lang/{{ 'bn' if lang == 'en' else 'en' }}" method="post" class="lang-toggle">
+        <button type="submit" class="link">{{ t("nav.toggle_language") }}</button>
+      </form>
+    </nav>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">
+    <small>{{ t("app.tagline") }}</small>
+  </footer>
+</body>
+</html>

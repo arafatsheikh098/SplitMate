@@ -1,0 +1,61 @@
+[project]
+name = "splitmate"
+version = "0.1.0"
+description = "Shared-expense and balance tracker for friend groups"
+readme = "README.md"
+requires-python = "==3.12.*"
+license = { text = "MIT" }
+authors = [{ name = "SplitMate" }]
+
+dependencies = [
+    "fastapi==0.115.5",
+    "uvicorn[standard]==0.32.1",
+    "sqlmodel==0.0.22",
+    "alembic==1.14.0",
+    "psycopg[binary]==3.2.3",
+    "pydantic==2.10.3",
+    "pydantic-settings==2.6.1",
+    "jinja2==3.1.4",
+    "python-multipart==0.0.20",
+    "itsdangerous==2.2.0",
+    "httpx==0.28.1",
+    "freezegun==1.5.1",
+    "hypothesis==6.124.1",
+    "pytest==8.3.4",
+    "pytest-cov==6.0.0",
+    "pytest-asyncio==0.24.0",
+    "ruff==0.8.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "playwright==1.49.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "W"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["splitmate"]
+omit = ["*/tests/*"]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["splitmate*"]
+
