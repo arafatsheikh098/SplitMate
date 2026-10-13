@@ -12,8 +12,8 @@ from datetime import UTC, datetime, timedelta
 from fastapi import HTTPException, status
 from sqlmodel import Session, select
 
-from .config import get_settings
-from .models import (
+from ..config import get_settings
+from ..models import (
     Activity,
     ActivityKind,
     Expense,
@@ -24,7 +24,7 @@ from .models import (
     Settlement,
     SplitPart,
 )
-from .security import (
+from ..security import (
     RateLimiter,
     generate_token,
     hash_token,

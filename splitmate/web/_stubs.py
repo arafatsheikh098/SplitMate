@@ -3,6 +3,10 @@
 We keep them importable so ``main.create_app`` doesn't fail and so the
 test client can still be used to discover every group-scoped route
 during M2's route-isolation test.
+
+Once a milestone lands, its real router is registered in
+``main._register_milestone_routers``; the stub for that domain becomes
+unused but is left in place so older code paths don't break.
 """
 
 from __future__ import annotations
@@ -35,45 +39,10 @@ def _stub_html(request: Request, group: Group, member: Member, label: str) -> HT
     return HTMLResponse(body)
 
 
-expenses_router = APIRouter()
-
-
-@expenses_router.get("/groups/{group_id}/expenses")
-def expenses_index(
-    group_id: int,
-    request: Request,
-    session: Session = Depends(get_session),
-    group_member: tuple[Group, Member] = Depends(require_member),
-) -> HTMLResponse:
-    group, member = group_member
-    lang = get_lang(request)
-    return HTMLResponse(
-        render(
-            "base.html.j2",
-            {"lang": lang},
-            block_title="Expenses",
-            content="<section class='card'><h1>Expenses (M4)</h1></section>",
-        )
-    )
-
-
-@expenses_router.get("/groups/{group_id}/expenses/new")
-def expenses_new(
-    group_id: int,
-    request: Request,
-    session: Session = Depends(get_session),
-    group_member: tuple[Group, Member] = Depends(require_member),
-) -> HTMLResponse:
-    lang = get_lang(request)
-    return HTMLResponse(
-        render(
-            "base.html.j2",
-            {"lang": lang},
-            block_title="Add expense",
-            content="<section class='card'><h1>Add expense (M4)</h1></section>",
-        )
-    )
-
+# Milestones M5+ still have no real implementation; their stubs are
+# mounted.  M4 (expenses) is now implemented, so we do **not** mount
+# the ``expenses_router`` stub here — ``main._register_milestone_routers``
+# mounts the real one.
 
 balances_router = APIRouter()
 

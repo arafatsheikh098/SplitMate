@@ -1,0 +1,68 @@
+<section class="card">
+  <h1>{{ t("expense.create.title") }}</h1>
+  {% if errors.form %}<p class="error">{{ errors.form }}</p>{% endif %}
+  <form method="post" action="/groups/{{ group.id }}/expenses/new" id="expense-form">
+    <label>
+      {{ t("expense.title_label") }}
+      <input name="title" maxlength="100" required value="{{ values.title|default('') }}">
+    </label>
+    <label>
+      {{ t("expense.amount_label") }}
+      <input name="amount" type="text" inputmode="decimal" required value="{{ values.amount|default('') }}">
+    </label>
+    <label>
+      {{ t("expense.date_label") }}
+      <input name="date_value" type="date" required value="{{ values.date|default(today) }}">
+    </label>
+    <label>
+      {{ t("expense.category_label") }}
+      <select name="category">
+        {% for c in categories %}
+          <option value="{{ c }}" {% if values.category == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      {{ t("expense.note_label") }}
+      <input name="note" maxlength="300" value="{{ values.note|default('') }}">
+    </label>
+    <fieldset>
+      <legend>{{ t("expense.payer_label") }}</legend>
+      <select name="payer_id" required>
+        {% for m in members %}
+          <option value="{{ m.id }}">{{ m.display_name|e }}</option>
+        {% endfor %}
+      </select>
+      <input name="payer_amount" type="text" inputmode="decimal" required placeholder="0.00">
+    </fieldset>
+    <fieldset>
+      <legend>{{ t("expense.split.method") }}</legend>
+      <select name="split_method" id="split_method">
+        {% for m in methods %}
+          <option value="{{ m }}" {% if values.split_method == m %}selected{% endif %}>{{ t("expense.split." + m) }}</option>
+        {% endfor %}
+      </select>
+    </fieldset>
+    <fieldset>
+      <legend>{{ t("expense.split.title") }}</legend>
+      <ul class="list" id="participants-list">
+        {% for m in members %}
+          <li>
+            <label class="row">
+              <input type="checkbox" name="participants" value="{{ m.id }}" checked>
+              <span>{{ m.display_name|e }}</span>
+              <input type="number" min="0" step="1" name="exact_{{ m.id }}" placeholder="0" data-method="exact" hidden>
+              <input type="number" min="0" step="1" name="pct_{{ m.id }}" placeholder="0" data-method="pct" hidden>
+              <input type="number" min="1" step="1" name="share_{{ m.id }}" placeholder="0" data-method="share" hidden>
+            </label>
+          </li>
+        {% endfor %}
+      </ul>
+    </fieldset>
+    <p>
+      <button type="submit">{{ t("expense.submit") }}</button>
+      <a class="secondary" href="/groups/{{ group.id }}/expenses">cancel</a>
+    </p>
+  </form>
+  <script type="module" src="/static/js/split_form.js"></script>
+</section>

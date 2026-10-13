@@ -1,0 +1,32 @@
+<section class="card">
+  <h1>{{ t("expense.list.title") }} — {{ group.name }}</h1>
+  <p><a class="btn" href="/groups/{{ group.id }}/expenses/new">{{ t("expense.create.title") }}</a></p>
+  {% if not expenses %}
+    <p class="muted">No expenses yet.</p>
+  {% else %}
+    <ul class="list">
+    {% for e in expenses %}
+      <li>
+        <div>
+          <a href="/groups/{{ group.id }}/expenses/{{ e.id }}"><strong>{{ e.title|e }}</strong></a>
+          <span class="muted">{{ e.occurred_on }} · {{ e.category }}</span>
+          {% if e.deleted_at %}<span class="badge warn">deleted</span>{% endif %}
+        </div>
+        <div class="row">
+          <span>{{ format_amount(e.amount_minor, group.currency_symbol) }}</span>
+          {% if not e.deleted_at and (current_member.is_admin or current_member.id == e.creator_id) %}
+          <form method="post" action="/groups/{{ group.id }}/expenses/{{ e.id }}/delete">
+            <button class="secondary" type="submit">delete</button>
+          </form>
+          {% endif %}
+          {% if e.deleted_at and current_member.is_admin %}
+          <form method="post" action="/groups/{{ group.id }}/expenses/{{ e.id }}/restore">
+            <button class="secondary" type="submit">restore</button>
+          </form>
+          {% endif %}
+        </div>
+      </li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+</section>

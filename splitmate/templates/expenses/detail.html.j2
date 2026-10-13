@@ -1,0 +1,28 @@
+<section class="card">
+  <h1>{{ expense.title|e }} <span class="muted">{{ expense.occurred_on }}</span></h1>
+  <p class="muted">{{ expense.category }}{% if expense.note %} — {{ expense.note|e }}{% endif %}</p>
+  <p><strong>{{ format_amount(expense.amount_minor, group.currency_symbol) }}</strong></p>
+  <h2>{{ t("expense.payer_label") }}</h2>
+  <ul class="list">
+    {% for p in payers %}
+      <li>
+        <span>{{ members_by_id[p.member_id].display_name|e }}</span>
+        <span>{{ format_amount(p.amount_minor, group.currency_symbol) }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+  <h2>{{ t("expense.split.title") }} ({{ t("expense.split." + expense.split_method) }})</h2>
+  <ul class="list">
+    {% for p in parts %}
+      <li>
+        <span>{{ members_by_id[p.member_id].display_name|e }}</span>
+        <span>{{ format_amount(p.amount_minor, group.currency_symbol) }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+  {% if not expense.deleted_at and (current_member.is_admin or current_member.id == expense.creator_id) %}
+  <form method="post" action="/groups/{{ group.id }}/expenses/{{ expense.id }}/delete">
+    <button class="secondary" type="submit">delete</button>
+  </form>
+  {% endif %}
+</section>

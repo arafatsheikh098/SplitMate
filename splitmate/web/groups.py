@@ -12,6 +12,7 @@ from .. import services
 from ..db import get_session
 from ..i18n import t
 from ..models import Group, Member
+from ..money import format_amount
 from ..security import (
     login_member,
     logout_member,
@@ -114,6 +115,7 @@ def group_dashboard(
             "current_member": member,
             "balances": balances,
             "invite_url": None,
+            "format_amount": format_amount,
             "t": t,
         },
     )

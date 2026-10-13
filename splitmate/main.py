@@ -146,6 +146,10 @@ def _register_milestone_routers(app: FastAPI) -> None:
     Each is imported lazily so an M1 build still starts cleanly.  We use a
     try/except so missing modules (because a milestone hasn't landed yet)
     don't crash the app — the milestone's commit will add the import.
+
+    Real routers are registered **after** the stub routers so that
+    when a milestone lands the real route wins; the stub's identical
+    path is shadowed.
     """
     try:
         from .web import groups as _groups
@@ -156,7 +160,9 @@ def _register_milestone_routers(app: FastAPI) -> None:
     try:
         from .web import _stubs as _stubs
 
-        app.include_router(_stubs.expenses_router)
+        # Note: the expenses stub is intentionally NOT registered
+        # because the real expenses router (M4) exists.  Mounting
+        # both would let the stub's identical path win.
         app.include_router(_stubs.balances_router)
         app.include_router(_stubs.settlements_router)
         app.include_router(_stubs.activity_router)
