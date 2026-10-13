@@ -21,6 +21,7 @@ import io
 from sqlmodel import Session, select
 
 from ..models import Expense, Member, Payer, Settlement, SplitPart
+from ..money import format_amount_plain
 
 _FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
 
@@ -89,7 +90,7 @@ def expenses_csv(session: Session, *, group_id: int) -> str:
             sorted({members.get(p.member_id, str(p.member_id)) for p in payers_by_expense[e.id]})
         )
         breakdown = "; ".join(
-            f"{members.get(p.member_id, str(p.member_id))}={p.amount_minor / 100:.2f}"
+            f"{members.get(p.member_id, str(p.member_id))}={format_amount_plain(p.amount_minor)}"
             for p in sorted(parts_by_expense[e.id], key=lambda p: p.member_id)
         )
         writer.writerow(
@@ -97,7 +98,7 @@ def expenses_csv(session: Session, *, group_id: int) -> str:
                 e.occurred_on.isoformat(),
                 _neutralise(e.title),
                 _neutralise(e.category),
-                f"{e.amount_minor / 100:.2f}",
+                format_amount_plain(e.amount_minor),
                 _neutralise(e.group.currency_symbol if e.group else ""),
                 _neutralise(e.split_method),
                 _neutralise(payer_names),
@@ -137,7 +138,7 @@ def settlements_csv(session: Session, *, group_id: int) -> str:
                 s.paid_on.isoformat(),
                 _neutralise(members.get(s.from_member_id, str(s.from_member_id))),
                 _neutralise(members.get(s.to_member_id, str(s.to_member_id))),
-                f"{s.amount_minor / 100:.2f}",
+                format_amount_plain(s.amount_minor),
                 _neutralise(s.group.currency_symbol if s.group else ""),
                 _neutralise(s.method),
                 _neutralise(s.note or ""),

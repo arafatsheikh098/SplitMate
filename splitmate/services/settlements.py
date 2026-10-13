@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 
 from sqlmodel import Session, select
 
@@ -201,7 +201,7 @@ def soft_delete_settlement(
     s = get_settlement_or_404(session, group_id, settlement_id)
     if s.deleted_at is not None:
         return s
-    s.deleted_at = datetime.utcnow()
+    s.deleted_at = datetime.now(UTC)
     session.add(s)
     session.add(
         Activity(

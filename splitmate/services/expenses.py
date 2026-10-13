@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
 from sqlmodel import Session, select
@@ -413,15 +413,29 @@ def create_expense(
         )
     )
     if idempotency_key:
-        from .idempotency import reserve_key
+        from .idempotency import lookup_expense, reserve_key
 
-        reserve_key(
+        reserved = reserve_key(
             session,
             group_id=group_id,
             member_id=creator_id,
             key=idempotency_key,
             expense_id=expense.id,
         )
+        if reserved is None:
+            # Concurrent duplicate: another transaction already reserved
+            # the same key.  The reserve_key helper rolled back our
+            # transaction (including the expense and its payers), so
+            # we look up the original expense and return it instead of
+            # committing an empty transaction.
+            existing = lookup_expense(
+                session,
+                group_id=group_id,
+                member_id=creator_id,
+                key=idempotency_key,
+            )
+            if existing is not None:
+                return existing
     session.commit()
     session.refresh(expense)
     return expense
@@ -466,7 +480,7 @@ def soft_delete_expense(
     expense = get_expense_or_404(session, group_id, expense_id)
     if expense.deleted_at is not None:
         return expense
-    expense.deleted_at = datetime.utcnow()
+    expense.deleted_at = datetime.now(UTC)
     session.add(expense)
     session.add(
         Activity(

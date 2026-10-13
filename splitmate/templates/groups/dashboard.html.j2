@@ -1,4 +1,5 @@
 {% set t = t %}
+{% if error %}<p class="error">{{ error|e }}</p>{% endif %}
 <section class="card">
   <h1>{{ group.name }} <span class="badge">{{ group.currency_symbol }}</span></h1>
   {% if current_member %}

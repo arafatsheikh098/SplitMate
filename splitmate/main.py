@@ -157,7 +157,7 @@ def _register_milestone_routers(app: FastAPI) -> None:
         from .web import groups as _groups
 
         app.include_router(_groups.router)
-    except Exception:  # pragma: no cover - milestone boundary
+    except ImportError:  # pragma: no cover - milestone boundary
         pass
     try:
         from .web import _stubs as _stubs
@@ -167,44 +167,44 @@ def _register_milestone_routers(app: FastAPI) -> None:
         # routers exist.  Mounting both would let the stub's
         # identical path win.
         app.include_router(_stubs.export_router)
-    except Exception:  # pragma: no cover
+    except ImportError:  # pragma: no cover
         pass
     try:
         from .web import expenses as _expenses
 
         # Replace stub with real router when milestone lands.
         app.include_router(_expenses.router)
-    except Exception:  # pragma: no cover
+    except ImportError:  # pragma: no cover
         pass
     try:
         from .web import balances as _balances
 
         app.include_router(_balances.router)
-    except Exception:  # pragma: no cover
+    except ImportError:  # pragma: no cover
         pass
     try:
         from .web import settlements as _settlements
 
         app.include_router(_settlements.router)
-    except Exception:  # pragma: no cover
+    except ImportError:  # pragma: no cover
         pass
     try:
         from .web import activity as _activity
 
         app.include_router(_activity.router)
-    except Exception:  # pragma: no cover
+    except ImportError:  # pragma: no cover
         pass
     try:
         from .web import share as _share
 
         app.include_router(_share.router)
-    except Exception:  # pragma: no cover
+    except ImportError:  # pragma: no cover
         pass
     try:
         from .web import export as _export
 
         app.include_router(_export.router)
-    except Exception:  # pragma: no cover
+    except ImportError:  # pragma: no cover
         pass
 
 

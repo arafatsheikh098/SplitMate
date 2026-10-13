@@ -87,6 +87,12 @@ def seed(*, reset: bool = False) -> int:
                     )
                 )
                 session.exec(delete(Expense).where(Expense.group_id == gid))
+            # Also drop any orphaned IdempotencyKey rows that were
+            # reserved but never attached to an expense (B11 in the
+            # bug audit).
+            session.exec(
+                delete(IdempotencyKey).where(IdempotencyKey.group_id == gid)
+            )
             session.exec(delete(Activity).where(Activity.group_id == gid))
             session.exec(delete(Settlement).where(Settlement.group_id == gid))
             session.exec(delete(RejoinCode).where(RejoinCode.group_id == gid))

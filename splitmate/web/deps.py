@@ -7,13 +7,14 @@ from sqlmodel import Session
 
 from .. import services
 from ..db import get_session
+from ..i18n import supported_languages
 from ..models import Group, Member
 from ..security import current_member_ids
 
 
 def get_lang(request: Request) -> str:
     cookie = request.cookies.get("lang")
-    if cookie in ("en", "bn"):
+    if cookie in supported_languages():
         return cookie
     from ..config import get_settings
 

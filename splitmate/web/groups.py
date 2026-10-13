@@ -24,6 +24,20 @@ from .deps import get_lang, require_admin, require_member
 router = APIRouter()
 
 
+def _redirect_with_error(group_id: int, error: str) -> RedirectResponse:
+    """Redirect back to the dashboard, surfacing ``error`` as a query string.
+
+    The dashboard template reads ``?error=`` and renders a banner.  We use
+    a query string (not a session flash) so the message is single-use and
+    never lingers across reloads.
+    """
+    from urllib.parse import quote
+
+    return RedirectResponse(
+        f"/groups/{group_id}?error={quote(error)}", status_code=303
+    )
+
+
 def _html(content: str, *, lang: str, title: str = "", status_code: int = 200) -> HTMLResponse:
     return HTMLResponse(
         render(
@@ -96,6 +110,7 @@ def redirect_to_group(group_id: int, session: Session = Depends(get_session)) ->
 def group_dashboard(
     group_id: int,
     request: Request,
+    error: str | None = None,
     session: Session = Depends(get_session),
     group_member: tuple = Depends(require_member),
 ) -> HTMLResponse:
@@ -117,6 +132,7 @@ def group_dashboard(
             "invite_url": None,
             "format_amount": format_amount,
             "t": t,
+            "error": error,
         },
     )
     return _html(body, lang=lang, title=group.name)
@@ -247,8 +263,7 @@ def invite_revoke(
     session: Session = Depends(get_session),
     group_member: tuple[Group, Member] = Depends(require_admin),
 ) -> RedirectResponse:
-    _, _ = group_member
-    group = services.get_group_or_404(session, group_id)
+    group, _ = group_member
     services.revoke_invite(session, group=group)
     return RedirectResponse(f"/groups/{group_id}", status_code=303)
 
@@ -271,8 +286,8 @@ def add_virtual(
         services.add_virtual_member(
             session, group=group, display_name=display_name, actor_id=actor.id
         )
-    except ServiceError:
-        pass  # Errors are surfaced by validation in the form; we just redirect.
+    except ServiceError as exc:
+        return _redirect_with_error(group_id, str(exc))
     return RedirectResponse(f"/groups/{group_id}", status_code=303)
 
 
@@ -286,8 +301,8 @@ def archive_member(
     group, _ = group_member
     try:
         services.archive_member(session, group=group, member_id=member_id)
-    except ServiceError:
-        pass
+    except ServiceError as exc:
+        return _redirect_with_error(group_id, str(exc))
     return RedirectResponse(f"/groups/{group_id}", status_code=303)
 
 
@@ -325,8 +340,8 @@ def demote_member(
     group, _ = group_member
     try:
         services.demote(session, group=group, member_id=member_id)
-    except ServiceError:
-        pass
+    except ServiceError as exc:
+        return _redirect_with_error(group_id, str(exc))
     return RedirectResponse(f"/groups/{group_id}", status_code=303)
 
 

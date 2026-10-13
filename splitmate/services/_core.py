@@ -88,7 +88,7 @@ def create_group(
     name: str,
     currency_symbol: str = "৳",
     admin_name: str,
-) -> tuple[Group, Member]:
+) -> tuple[Group, Member, str]:
     """Create a group, a hashed invite token, and the creator as admin member.
 
     The plaintext invite token is returned in the result so the caller can
