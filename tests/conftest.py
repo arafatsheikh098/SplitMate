@@ -30,7 +30,10 @@ def _isolate_engine(tmp_path) -> Iterator[None]:
     db_path = tmp_path / "splitmate.db"
     os.environ["DATABASE_URL"] = f"sqlite:///{db_path}"
 
-    from splitmate import db
+    # Always import the model module so ``SQLModel.metadata`` is populated
+    # before ``create_all()`` runs.  Tests that don't import models
+    # directly still get a complete schema.
+    from splitmate import db, models  # noqa: F401  (registers tables)
     from splitmate.i18n import reload_translations
     from splitmate.templates import reset_for_tests
 

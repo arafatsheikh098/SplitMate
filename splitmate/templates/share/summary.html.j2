@@ -1,0 +1,11 @@
+<section class="card">
+  <h1>{{ t("share.title") }} — {{ group.name }}</h1>
+  <p>
+    <a class="btn" href="/groups/{{ group.id }}/summary.txt">{{ t("share.copy_summary") }} (.txt)</a>
+    <a class="btn secondary" href="/groups/{{ group.id }}/expenses.csv">{{ t("share.csv") }} (expenses)</a>
+    <a class="btn secondary" href="/groups/{{ group.id }}/settlements.csv">{{ t("share.csv") }} (settlements)</a>
+  </p>
+  <pre id="summary" class="codeblock">{{ summary_text|e }}</pre>
+  <button id="copy-summary-btn" type="button" class="btn secondary" data-label="{{ t("share.copy_summary") }}">{{ t("share.copy_summary") }}</button>
+  <script type="module" src="/static/js/copy_summary.js" defer></script>
+</section>

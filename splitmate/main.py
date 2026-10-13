@@ -20,6 +20,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from .config import get_settings
 from .db import get_engine
 from .i18n import supported_languages, t
+from .security_headers import SecurityHeadersMiddleware
 from .templates import render
 
 _BASE_DIR = Path(__file__).parent
@@ -64,6 +65,7 @@ def create_app() -> FastAPI:
         same_site="lax",
         https_only=settings.session_cookie_secure,
     )
+    app.add_middleware(SecurityHeadersMiddleware)
 
     app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 
@@ -160,11 +162,11 @@ def _register_milestone_routers(app: FastAPI) -> None:
     try:
         from .web import _stubs as _stubs
 
-        # Note: the expenses / balances / settlements / activity
+        # Note: the expenses / balances / settlements / activity / share
         # stubs are intentionally NOT registered because their real
         # routers exist.  Mounting both would let the stub's
         # identical path win.
-        app.include_router(_stubs.share_router)
+        app.include_router(_stubs.export_router)
     except Exception:  # pragma: no cover
         pass
     try:
@@ -196,6 +198,12 @@ def _register_milestone_routers(app: FastAPI) -> None:
         from .web import share as _share
 
         app.include_router(_share.router)
+    except Exception:  # pragma: no cover
+        pass
+    try:
+        from .web import export as _export
+
+        app.include_router(_export.router)
     except Exception:  # pragma: no cover
         pass
 
