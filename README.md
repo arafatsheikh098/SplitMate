@@ -18,6 +18,20 @@ never drift.
 * **Tested** — 158 unit / property tests, 1 Playwright end-to-end
   test, ruff clean.
 
+## Screenshots
+
+| Home & Welcome | Create Group Form | Group Dashboard |
+| :---: | :---: | :---: |
+| ![Home](docs/screenshots/01_home.png) | ![Create Group](docs/screenshots/02_create_form.png) | ![Dashboard](docs/screenshots/03_group_dashboard.png) |
+
+| Member Join Link | Add Expense Form | Expense Saved |
+| :---: | :---: | :---: |
+| ![Member Joined](docs/screenshots/04_bea_joined.png) | ![Expense Form](docs/screenshots/05_expense_form.png) | ![Expense Saved](docs/screenshots/06_expense_saved.png) |
+
+| Net Balances | Group Summary | Activity Stream |
+| :---: | :---: | :---: |
+| ![Balances](docs/screenshots/07_balances.png) | ![Summary](docs/screenshots/08_summary.png) | ![Activity](docs/screenshots/09_activity.png) |
+
 ## Quick start (local, SQLite)
 
 ```sh
