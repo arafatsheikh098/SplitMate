@@ -1,6 +1,6 @@
 # SCOPE.md — SplitMate contract
 
-> This file is the contract. Per `CLAUDE.md` it is never edited after the lock.
+> This document specifies the functional scope and specifications for SplitMate.
 
 ## IN SCOPE (copied verbatim from PROJECT_SPEC.md)
 
