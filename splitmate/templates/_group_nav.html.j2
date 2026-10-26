@@ -1,0 +1,100 @@
+{% if group %}
+<header class="group-hero-header">
+  <div class="group-hero-main">
+    <div class="group-title-wrapper">
+      <div class="group-icon-avatar">
+        <span>{{ group.name[:1] | upper }}</span>
+      </div>
+      <div>
+        <div class="group-name-row">
+          <h1 class="group-name">{{ group.name }}</h1>
+          <span class="currency-tag">{{ group.currency_symbol }}</span>
+        </div>
+        {% if current_member %}
+          <div class="member-indicator">
+            <span class="user-avatar-dot"></span>
+            <span>Signed in as <strong>{{ current_member.display_name }}</strong></span>
+            {% if current_member.is_admin %}
+              <span class="badge badge-admin">Admin</span>
+            {% endif %}
+            <form method="post" action="/logout" class="inline-form">
+              <button class="link-subtle" type="submit" title="Logout from {{ group.name }}">(Logout)</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <div class="group-quick-actions">
+      <a class="btn btn-primary btn-sm" href="/groups/{{ group.id }}/expenses/new">
+        <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>{{ t("expense.create.title") }}</span>
+      </a>
+      <a class="btn btn-secondary btn-sm" href="/groups/{{ group.id }}/settle">
+        <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+          <line x1="2" y1="10" x2="22" y2="10"></line>
+        </svg>
+        <span>{{ t("settle.title") }}</span>
+      </a>
+    </div>
+  </div>
+
+  <nav class="group-subnav" aria-label="Group Navigation">
+    <a href="/groups/{{ group.id }}" class="group-nav-tab {% if active_tab == 'dashboard' %}active{% endif %}">
+      <svg class="icon-tab" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"></rect>
+        <rect x="14" y="3" width="7" height="7"></rect>
+        <rect x="14" y="14" width="7" height="7"></rect>
+        <rect x="3" y="14" width="7" height="7"></rect>
+      </svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="/groups/{{ group.id }}/expenses" class="group-nav-tab {% if active_tab == 'expenses' %}active{% endif %}">
+      <svg class="icon-tab" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+      </svg>
+      <span>{{ t("expense.list.title") }}</span>
+    </a>
+    <a href="/groups/{{ group.id }}/balances" class="group-nav-tab {% if active_tab == 'balances' %}active{% endif %}">
+      <svg class="icon-tab" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="3" x2="12" y2="21"></line>
+        <path d="M18 6l-6-3-6 3"></path>
+        <path d="M6 12l-4 6h8l-4-6z"></path>
+        <path d="M18 12l-4 6h8l-4-6z"></path>
+      </svg>
+      <span>{{ t("balance.title") }}</span>
+    </a>
+    <a href="/groups/{{ group.id }}/settle" class="group-nav-tab {% if active_tab == 'settle' %}active{% endif %}">
+      <svg class="icon-tab" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+        <line x1="1" y1="10" x2="23" y2="10"></line>
+      </svg>
+      <span>{{ t("settle.title") }}</span>
+    </a>
+    <a href="/groups/{{ group.id }}/activity" class="group-nav-tab {% if active_tab == 'activity' %}active{% endif %}">
+      <svg class="icon-tab" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      <span>{{ t("activity.title") }}</span>
+    </a>
+    <a href="/groups/{{ group.id }}/summary" class="group-nav-tab {% if active_tab == 'share' %}active{% endif %}">
+      <svg class="icon-tab" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="18" cy="5" r="3"></circle>
+        <circle cx="6" cy="12" r="3"></circle>
+        <circle cx="18" cy="19" r="3"></circle>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+      </svg>
+      <span>{{ t("share.title") }}</span>
+    </a>
+  </nav>
+</header>
+{% endif %}

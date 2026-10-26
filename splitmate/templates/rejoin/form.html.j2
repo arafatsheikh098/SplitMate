@@ -1,9 +1,26 @@
 {% set t = t %}
-<section class="card">
-  <h1>Rejoin {{ group.name }}</h1>
-  <p>Click the button to confirm.</p>
-  <form method="post" action="/rejoin/{{ group.id }}/{{ code }}">
-    {% if errors.form %}<p class="error">{{ errors.form }}</p>{% endif %}
-    <button type="submit">Confirm rejoin</button>
-  </form>
-</section>
+<div class="auth-card-wrapper">
+  <section class="card card-elevated auth-card text-center">
+    <div class="auth-icon-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+      </svg>
+    </div>
+
+    <h1 class="auth-title">Rejoin {{ group.name }}</h1>
+    <p class="muted">Click below to restore your session for this group on this browser.</p>
+
+    {% if errors.form %}
+      <div class="alert alert-danger" role="alert">
+        <span class="error">{{ errors.form }}</span>
+      </div>
+    {% endif %}
+
+    <form method="post" action="/rejoin/{{ group.id }}/{{ code }}">
+      <div class="form-actions-full">
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Confirm rejoin →</button>
+      </div>
+    </form>
+  </section>
+</div>

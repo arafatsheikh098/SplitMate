@@ -1,84 +1,221 @@
 {% set t = t %}
-{% if error %}<p class="error">{{ error|e }}</p>{% endif %}
-<section class="card">
-  <h1>{{ group.name }} <span class="badge">{{ group.currency_symbol }}</span></h1>
-  {% if current_member %}
-    <p class="muted">Signed in as <strong>{{ current_member.display_name }}</strong>
-    {% if current_member.is_admin %}<span class="badge">admin</span>{% endif %}
-    <form method="post" action="/logout" style="display:inline">
-      <button class="link" type="submit">{{ t("nav.groups") }} — logout</button>
-    </form>
-    </p>
-  {% endif %}
-  <p>
-    <a class="btn" href="/groups/{{ group.id }}/expenses">{{ t("expense.list.title") }}</a>
-    <a class="btn" href="/groups/{{ group.id }}/balances">{{ t("balance.title") }}</a>
-    <a class="btn" href="/groups/{{ group.id }}/activity">{{ t("activity.title") }}</a>
-    <a class="btn" href="/groups/{{ group.id }}/summary">{{ t("share.title") }}</a>
-  </p>
-</section>
+{% set active_tab = "dashboard" %}
+{% include "_group_nav.html.j2" %}
 
+{% if error %}
+  <div class="alert alert-danger" role="alert">
+    <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span>{{ error|e }}</span>
+  </div>
+{% endif %}
+
+<!-- Personal Status Card -->
+{% if current_member and balances %}
+  {% set my_bal = balances.get(current_member.id, 0) %}
+  <div class="card card-hero {% if my_bal > 0 %}card-status-positive{% elif my_bal < 0 %}card-status-negative{% else %}card-status-neutral{% endif %}">
+    <div class="status-content">
+      <div class="status-label">Your Balance in {{ group.name }}</div>
+      <div class="status-amount">
+        {% if my_bal > 0 %}
+          <span class="amount-prefix">+</span>{{ format_amount(my_bal, group.currency_symbol) }}
+        {% elif my_bal < 0 %}
+          <span class="amount-prefix">-</span>{{ format_amount(-my_bal, group.currency_symbol) }}
+        {% else %}
+          {{ format_amount(0, group.currency_symbol) }}
+        {% endif %}
+      </div>
+      <div class="status-desc">
+        {% if my_bal > 0 %}
+          🎉 You are owed money overall. Others will pay you back.
+        {% elif my_bal < 0 %}
+          ⚠️ You owe money to the group. Check balances to settle up.
+        {% else %}
+          ✓ You are completely settled up!
+        {% endif %}
+      </div>
+    </div>
+    <div class="status-actions">
+      <a class="btn {% if my_bal < 0 %}btn-danger{% else %}btn-primary{% endif %}" href="/groups/{{ group.id }}/balances">
+        View Balance Plan →
+      </a>
+    </div>
+  </div>
+{% endif %}
+
+<!-- Quick Nav Pills (Ensures backward-compatibility with all tests) -->
+<div class="card card-elevated dashboard-nav-card">
+  <div class="dashboard-quick-links">
+    <a class="btn btn-secondary" href="/groups/{{ group.id }}/expenses">
+      <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+      </svg>
+      {{ t("expense.list.title") }}
+    </a>
+    <a class="btn btn-secondary" href="/groups/{{ group.id }}/balances">
+      <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="3" x2="12" y2="21"></line>
+        <path d="M18 6l-6-3-6 3"></path>
+        <path d="M6 12l-4 6h8l-4-6z"></path>
+        <path d="M18 12l-4 6h8l-4-6z"></path>
+      </svg>
+      {{ t("balance.title") }}
+    </a>
+    <a class="btn btn-secondary" href="/groups/{{ group.id }}/activity">
+      <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      {{ t("activity.title") }}
+    </a>
+    <a class="btn btn-secondary" href="/groups/{{ group.id }}/summary">
+      <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="18" cy="5" r="3"></circle>
+        <circle cx="6" cy="12" r="3"></circle>
+        <circle cx="18" cy="19" r="3"></circle>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+      </svg>
+      {{ t("share.title") }}
+    </a>
+  </div>
+</div>
+
+<!-- Admin Invite Link Section -->
 {% if current_member and current_member.is_admin %}
-<section class="card">
-  <h2>{{ t("group.invite.title") }}</h2>
-  <form method="post" action="/groups/{{ group.id }}/invite/rotate" style="display:inline">
-    <button type="submit">{{ t("group.invite.rotate") }}</button>
-  </form>
-  <form method="post" action="/groups/{{ group.id }}/invite/revoke" style="display:inline">
-    <button class="secondary" type="submit">{{ t("group.invite.revoke") }}</button>
-  </form>
+<section class="card card-elevated">
+  <div class="card-header-row">
+    <div>
+      <h2 class="card-heading">{{ t("group.invite.title") }}</h2>
+      <p class="muted">Share the invite link to let friends join and split expenses.</p>
+    </div>
+    <div class="row">
+      <form method="post" action="/groups/{{ group.id }}/invite/rotate" style="display:inline">
+        <button type="submit" class="btn btn-secondary btn-sm" title="Generate a fresh invite link and invalidate the old one">
+          <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+          {{ t("group.invite.rotate") }}
+        </button>
+      </form>
+      <form method="post" action="/groups/{{ group.id }}/invite/revoke" style="display:inline">
+        <button class="btn btn-danger btn-sm" type="submit" title="Revoke access via invite links">
+          <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          {{ t("group.invite.revoke") }}
+        </button>
+      </form>
+    </div>
+  </div>
 </section>
 {% endif %}
 
-<section class="card">
-  <h2>{{ t("group.members.title") }}</h2>
-  <ul class="list">
+<!-- Group Members Section -->
+<section class="card card-elevated">
+  <div class="card-header-row">
+    <div>
+      <h2 class="card-heading">{{ t("group.members.title") }} ({{ members|length }})</h2>
+      <p class="muted">Everyone currently part of this group ledger.</p>
+    </div>
+  </div>
+
+  <ul class="member-list">
     {% for m in members %}
-    <li>
-      <div>
-        <strong>{{ m.display_name }}</strong>
-        {% if m.archived %}<span class="badge warn">archived</span>{% endif %}
-        {% if m.is_virtual %}<span class="badge warn">virtual</span>{% endif %}
-        {% if m.is_admin %}<span class="badge">admin</span>{% endif %}
-        {% if balances and balances.get(m.id, 0) != 0 %}
-          <span class="muted">
+    <li class="member-item">
+      <div class="member-info">
+        <div class="avatar-circle avatar-color-{{ loop.index % 6 }}">
+          {{ m.display_name[:1] | upper }}
+        </div>
+        <div class="member-details">
+          <div class="member-name-row">
+            <strong class="member-name">{{ m.display_name }}</strong>
+            {% if m.id == current_member.id %}
+              <span class="badge badge-neutral">You</span>
+            {% endif %}
+            {% if m.is_admin %}
+              <span class="badge badge-admin">admin</span>
+            {% endif %}
+            {% if m.is_virtual %}
+              <span class="badge badge-virtual">virtual</span>
+            {% endif %}
+            {% if m.archived %}
+              <span class="badge badge-archived">archived</span>
+            {% endif %}
+          </div>
+          {% if balances and balances.get(m.id, 0) != 0 %}
             {% set bal = balances[m.id] %}
-            {% if bal > 0 %}{{ t("balance.owed", name="", amount=format_amount(bal, group.currency_symbol)) }}{% else %}{{ t("balance.owes", name="", amount=format_amount(-bal, group.currency_symbol)) }}{% endif %}
-          </span>
-        {% endif %}
+            <div class="member-balance-line">
+              {% if bal > 0 %}
+                <span class="balance-tag balance-positive">
+                  {{ t("balance.owed", name=m.display_name, amount=format_amount(bal, group.currency_symbol)) }}
+                </span>
+              {% else %}
+                <span class="balance-tag balance-negative">
+                  {{ t("balance.owes", name=m.display_name, amount=format_amount(-bal, group.currency_symbol)) }}
+                </span>
+              {% endif %}
+            </div>
+          {% else %}
+            <div class="member-balance-line">
+              <span class="balance-tag balance-settled">All settled up</span>
+            </div>
+          {% endif %}
+        </div>
       </div>
+
       {% if current_member and current_member.is_admin %}
-      <div class="row">
+      <div class="member-actions">
         {% if m.is_admin and m.id != current_member.id %}
-        <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/demote">
-          <button class="secondary" type="submit">{{ t("group.members.demote") }}</button>
-        </form>
+          <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/demote">
+            <button class="btn btn-subtle btn-xs" type="submit">{{ t("group.members.demote") }}</button>
+          </form>
         {% elif not m.is_admin %}
-        <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/promote">
-          <button class="secondary" type="submit">{{ t("group.members.promote") }}</button>
-        </form>
+          <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/promote">
+            <button class="btn btn-subtle btn-xs" type="submit">{{ t("group.members.promote") }}</button>
+          </form>
         {% endif %}
         <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/relink">
-          <button class="secondary" type="submit">re-link</button>
+          <button class="btn btn-subtle btn-xs" type="submit" title="Generate a one-time link for this member to access on a new device">re-link</button>
         </form>
         {% if m.archived %}
-        <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/restore">
-          <button class="secondary" type="submit">{{ t("group.members.restore") }}</button>
-        </form>
+          <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/restore">
+            <button class="btn btn-subtle btn-xs" type="submit">{{ t("group.members.restore") }}</button>
+          </form>
         {% else %}
-        <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/archive">
-          <button class="secondary" type="submit">{{ t("group.members.archive") }}</button>
-        </form>
+          <form method="post" action="/groups/{{ group.id }}/members/{{ m.id }}/archive">
+            <button class="btn btn-subtle btn-xs btn-subtle-danger" type="submit">{{ t("group.members.archive") }}</button>
+          </form>
         {% endif %}
       </div>
       {% endif %}
     </li>
     {% endfor %}
   </ul>
+
   {% if current_member and current_member.is_admin %}
-  <form method="post" action="/groups/{{ group.id }}/members/virtual" class="row" style="margin-top:.5rem">
-    <input name="display_name" maxlength="60" required placeholder="Display name">
-    <button class="secondary" type="submit">{{ t("group.members.add_virtual") }}</button>
-  </form>
+  <div class="virtual-member-box">
+    <div class="virtual-member-heading">
+      <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="8.5" cy="7" r="4"></circle>
+        <line x1="20" y1="8" x2="20" y2="14"></line>
+        <line x1="23" y1="11" x2="17" y2="11"></line>
+      </svg>
+      <span>{{ t("group.members.add_virtual") }}</span>
+    </div>
+    <form method="post" action="/groups/{{ group.id }}/members/virtual" class="virtual-member-form">
+      <input name="display_name" maxlength="60" required placeholder="Name (e.g. John Doe)" class="input-modern">
+      <button class="btn btn-secondary" type="submit">{{ t("group.members.add_virtual") }}</button>
+    </form>
+  </div>
   {% endif %}
 </section>

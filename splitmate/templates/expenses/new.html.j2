@@ -1,68 +1,153 @@
-<section class="card">
-  <h1>{{ t("expense.create.title") }}</h1>
-  {% if errors.form %}<p class="error">{{ errors.form }}</p>{% endif %}
-  <form method="post" action="/groups/{{ group.id }}/expenses/new" id="expense-form">
-    <label>
-      {{ t("expense.title_label") }}
-      <input name="title" maxlength="100" required value="{{ values.title|default('') }}">
+{% set t = t %}
+{% set active_tab = "expenses" %}
+{% include "_group_nav.html.j2" %}
+
+<section class="card card-elevated form-card">
+  <div class="card-header-row">
+    <div>
+      <h2 class="card-heading">{{ t("expense.create.title") }}</h2>
+      <p class="muted">Record a new payment and choose how it is shared among members.</p>
+    </div>
+  </div>
+
+  {% if errors.form %}
+    <div class="alert alert-danger" role="alert">
+      <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errors.form }}</span>
+    </div>
+  {% endif %}
+
+  <form method="post" action="/groups/{{ group.id }}/expenses/new" id="expense-form" class="modern-form">
+    <div class="form-grid-2">
+      <label class="form-group">
+        <span class="form-label">{{ t("expense.title_label") }} <span class="required">*</span></span>
+        <input name="title" maxlength="100" required value="{{ values.title|default('') }}" placeholder="e.g. Team Dinner, Groceries, Uber" class="input-modern">
+      </label>
+
+      <label class="form-group">
+        <span class="form-label">{{ t("expense.amount_label") }} ({{ group.currency_symbol }}) <span class="required">*</span></span>
+        <div class="input-with-prefix">
+          <span class="input-prefix">{{ group.currency_symbol }}</span>
+          <input name="amount" type="text" inputmode="decimal" required value="{{ values.amount|default('') }}" placeholder="0.00" class="input-modern input-amount">
+        </div>
+      </label>
+    </div>
+
+    <div class="form-grid-2">
+      <label class="form-group">
+        <span class="form-label">{{ t("expense.date_label") }} <span class="required">*</span></span>
+        <input name="date_value" type="date" required value="{{ values.date|default(today) }}" class="input-modern">
+      </label>
+
+      <label class="form-group">
+        <span class="form-label">{{ t("expense.category_label") }}</span>
+        <select name="category" class="input-modern select-modern">
+          {% for c in categories %}
+            <option value="{{ c }}" {% if values.category == c %}selected{% endif %}>
+              {% if c == 'Food' %}🍽️ Food
+              {% elif c == 'Transport' %}🚗 Transport
+              {% elif c == 'Rent' %}🏠 Rent
+              {% elif c == 'Utilities' %}💡 Utilities
+              {% elif c == 'Trip' %}✈️ Trip
+              {% else %}🏷️ {{ c }}{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+
+    <label class="form-group">
+      <span class="form-label">{{ t("expense.note_label") }}</span>
+      <input name="note" maxlength="300" value="{{ values.note|default('') }}" placeholder="Add details or context (optional)" class="input-modern">
     </label>
-    <label>
-      {{ t("expense.amount_label") }}
-      <input name="amount" type="text" inputmode="decimal" required value="{{ values.amount|default('') }}">
-    </label>
-    <label>
-      {{ t("expense.date_label") }}
-      <input name="date_value" type="date" required value="{{ values.date|default(today) }}">
-    </label>
-    <label>
-      {{ t("expense.category_label") }}
-      <select name="category">
-        {% for c in categories %}
-          <option value="{{ c }}" {% if values.category == c %}selected{% endif %}>{{ c }}</option>
-        {% endfor %}
-      </select>
-    </label>
-    <label>
-      {{ t("expense.note_label") }}
-      <input name="note" maxlength="300" value="{{ values.note|default('') }}">
-    </label>
-    <fieldset>
-      <legend>{{ t("expense.payer_label") }}</legend>
-      <select name="payer_id" required>
-        {% for m in members %}
-          <option value="{{ m.id }}">{{ m.display_name|e }}</option>
-        {% endfor %}
-      </select>
-      <input name="payer_amount" type="text" inputmode="decimal" required placeholder="0.00">
+
+    <fieldset class="form-fieldset">
+      <legend class="fieldset-legend">
+        <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+          <line x1="2" y1="10" x2="22" y2="10"></line>
+        </svg>
+        <span>{{ t("expense.payer_label") }}</span>
+      </legend>
+      <div class="form-grid-2">
+        <label class="form-group">
+          <span class="form-sublabel">Who paid?</span>
+          <select name="payer_id" required class="input-modern select-modern">
+            {% for m in members %}
+              <option value="{{ m.id }}" {% if current_member and m.id == current_member.id %}selected{% endif %}>{{ m.display_name|e }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label class="form-group">
+          <span class="form-sublabel">Payer amount ({{ group.currency_symbol }})</span>
+          <div class="input-with-prefix">
+            <span class="input-prefix">{{ group.currency_symbol }}</span>
+            <input name="payer_amount" type="text" inputmode="decimal" required placeholder="0.00" class="input-modern">
+          </div>
+        </label>
+      </div>
     </fieldset>
-    <fieldset>
-      <legend>{{ t("expense.split.method") }}</legend>
-      <select name="split_method" id="split_method">
-        {% for m in methods %}
-          <option value="{{ m }}" {% if values.split_method == m %}selected{% endif %}>{{ t("expense.split." + m) }}</option>
-        {% endfor %}
-      </select>
+
+    <fieldset class="form-fieldset">
+      <legend class="fieldset-legend">
+        <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="8.5" cy="7" r="4"></circle>
+          <line x1="18" y1="8" x2="23" y2="13"></line>
+          <line x1="23" y1="8" x2="18" y2="13"></line>
+        </svg>
+        <span>{{ t("expense.split.method") }}</span>
+      </legend>
+      <div class="form-group">
+        <select name="split_method" id="split_method" class="input-modern select-modern">
+          {% for m in methods %}
+            <option value="{{ m }}" {% if values.split_method == m %}selected{% endif %}>
+              {% if m == 'equal' %}⚖️ Equal split
+              {% elif m == 'exact' %}🎯 Exact amounts
+              {% elif m == 'percentage' %}📊 Percentages (%)
+              {% elif m == 'shares' %}🔢 Custom shares
+              {% else %}{{ t("expense.split." + m) }}{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
     </fieldset>
-    <fieldset>
-      <legend>{{ t("expense.split.title") }}</legend>
-      <ul class="list" id="participants-list">
+
+    <fieldset class="form-fieldset">
+      <legend class="fieldset-legend">
+        <span>{{ t("expense.split.title") }}</span>
+      </legend>
+      <ul class="participant-checklist" id="participants-list">
         {% for m in members %}
-          <li>
-            <label class="row">
-              <input type="checkbox" name="participants" value="{{ m.id }}" checked>
-              <span>{{ m.display_name|e }}</span>
-              <input type="number" min="0" step="1" name="exact_{{ m.id }}" placeholder="0" data-method="exact" hidden>
-              <input type="number" min="0" step="1" name="pct_{{ m.id }}" placeholder="0" data-method="pct" hidden>
-              <input type="number" min="1" step="1" name="share_{{ m.id }}" placeholder="0" data-method="share" hidden>
+          <li class="participant-check-item">
+            <label class="participant-label">
+              <input type="checkbox" name="participants" value="{{ m.id }}" checked class="checkbox-modern">
+              <span class="participant-avatar">{{ m.display_name[:1] | upper }}</span>
+              <span class="participant-name">{{ m.display_name|e }}</span>
+              <input type="number" min="0" step="1" name="exact_{{ m.id }}" placeholder="0" data-method="exact" class="input-split-param" hidden>
+              <input type="number" min="0" step="1" name="pct_{{ m.id }}" placeholder="0%" data-method="pct" class="input-split-param" hidden>
+              <input type="number" min="1" step="1" name="share_{{ m.id }}" placeholder="1 share" data-method="share" class="input-split-param" hidden>
             </label>
           </li>
         {% endfor %}
       </ul>
     </fieldset>
-    <p>
-      <button type="submit">{{ t("expense.submit") }}</button>
-      <a class="secondary" href="/groups/{{ group.id }}/expenses">cancel</a>
-    </p>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary btn-lg">
+        <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        {{ t("expense.submit") }}
+      </button>
+      <a class="btn btn-secondary" href="/groups/{{ group.id }}/expenses">Cancel</a>
+    </div>
   </form>
   <script type="module" src="/static/js/split_form.js"></script>
 </section>

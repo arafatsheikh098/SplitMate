@@ -1,0 +1,84 @@
+<div class="hero-section">
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    <span>{{ t("app.title") }} · Financial Simplicity</span>
+  </div>
+  <h1 class="hero-title">{{ t("app.title") }}</h1>
+  <p class="hero-subtitle">{{ t("app.tagline") }}</p>
+  
+  <div class="hero-actions">
+    <a class="btn btn-primary btn-lg" href="/groups/new">
+      <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="16"></line>
+        <line x1="8" y1="12" x2="16" y2="12"></line>
+      </svg>
+      {{ t("nav.create_group") }}
+    </a>
+  </div>
+</div>
+
+<div class="features-grid">
+  <div class="feature-card">
+    <div class="feature-icon feature-icon-emerald">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+      </svg>
+    </div>
+    <h3>Paisa-Perfect Precision</h3>
+    <p>Stored as exact integer minor units. Zero floating-point rounding errors ever, settled to the last paisa.</p>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-icon feature-icon-blue">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+        <polyline points="17 6 23 6 23 12"></polyline>
+      </svg>
+    </div>
+    <h3>Simplified Debts</h3>
+    <p>SplitMate computes the minimal cash flow plan automatically, saving your group from dozens of messy cross-payments.</p>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-icon feature-icon-purple">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+    </div>
+    <h3>Frictionless & Private</h3>
+    <p>No passwords to remember or accounts to create. Join instantly with a secure cryptographic link.</p>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-icon feature-icon-amber">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="2" y1="12" x2="22" y2="12"></line>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+      </svg>
+    </div>
+    <h3>Bilingual (EN / BN)</h3>
+    <p>Full native support for both English and Bangla, with custom currency symbols (৳, $, €, £, ₹).</p>
+  </div>
+</div>
+
+<div class="card card-elevated home-quick-card">
+  <div class="quick-card-header">
+    <div class="quick-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+      </svg>
+    </div>
+    <div>
+      <h4>Have an invite token or link?</h4>
+      <p class="muted">Paste your join link or invite token below to jump straight in.</p>
+    </div>
+  </div>
+  <form id="quick-join-form" class="quick-join-form" onsubmit="event.preventDefault(); const val=document.getElementById('quick-token').value.trim(); if(val){ const token = val.includes('/join/') ? val.split('/join/')[1] : val; window.location.href='/join/' + token; }">
+    <input id="quick-token" type="text" placeholder="e.g. /join/token-here or paste token" required class="input-modern">
+    <button type="submit" class="btn btn-secondary">Join Group →</button>
+  </form>
+</div>

@@ -159,16 +159,18 @@ def test_e2e_full_journey(server_url):
         gid_match = re.search(r"/groups/(\d+)", body)
         assert gid_match, "no group id in invite page"
         gid = gid_match.group(1)
+        page.goto(f"{server_url}/groups/{gid}", wait_until="load")
         page.screenshot(path=str(screenshots / "03_group_dashboard.png"))
 
         # Capture the invite token (already set above).
         assert invite_token
 
         # 3. Bea joins in a new context.
-        bea_ctx = browser.new_context()
+        bea_ctx = browser.new_context(viewport={"width": 375, "height": 720})
         bea_page = bea_ctx.new_page()
         bea_page.goto(f"{server_url}/join/{invite_token}", wait_until="load")
         bea_page.fill('input[name="display_name"]', "Bea")
+        bea_page.screenshot(path=str(screenshots / "04_bea_joined.png"))
         # The /join POST returns 303 → /groups/{id}, so expect_navigation
         # does the right thing here.
         with bea_page.expect_navigation(url=re.compile(r"/groups/\d+"), timeout=10_000):
@@ -176,9 +178,6 @@ def test_e2e_full_journey(server_url):
                 "document.querySelector('form[action^=\"/join/\"]').submit()"
             )
         assert re.search(r"/groups/\d+", bea_page.url), bea_page.url
-        page.screenshot(path=str(screenshots / "04_bea_joined.png"))
-        assert re.search(r"/groups/\d+", bea_page.url), bea_page.url
-        page.screenshot(path=str(screenshots / "04_bea_joined.png"))
 
         # 4. Asha adds an expense.
         page.goto(f"{server_url}/groups/{gid}/expenses/new", wait_until="load")

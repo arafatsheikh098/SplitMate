@@ -1,32 +1,127 @@
-<section class="card">
-  <h1>{{ t("expense.list.title") }} — {{ group.name }}</h1>
-  <p><a class="btn" href="/groups/{{ group.id }}/expenses/new">{{ t("expense.create.title") }}</a></p>
-  {% if not expenses %}
-    <p class="muted">No expenses yet.</p>
-  {% else %}
-    <ul class="list">
-    {% for e in expenses %}
-      <li>
-        <div>
-          <a href="/groups/{{ group.id }}/expenses/{{ e.id }}"><strong>{{ e.title|e }}</strong></a>
-          <span class="muted">{{ e.occurred_on }} · {{ e.category }}</span>
-          {% if e.deleted_at %}<span class="badge warn">deleted</span>{% endif %}
-        </div>
-        <div class="row">
-          <span>{{ format_amount(e.amount_minor, group.currency_symbol) }}</span>
-          {% if not e.deleted_at and (current_member.is_admin or current_member.id == e.creator_id) %}
-          <form method="post" action="/groups/{{ group.id }}/expenses/{{ e.id }}/delete">
-            <button class="secondary" type="submit">delete</button>
-          </form>
-          {% endif %}
-          {% if e.deleted_at and current_member.is_admin %}
-          <form method="post" action="/groups/{{ group.id }}/expenses/{{ e.id }}/restore">
-            <button class="secondary" type="submit">restore</button>
-          </form>
-          {% endif %}
-        </div>
-      </li>
-    {% endfor %}
+{% set t = t %}
+{% set active_tab = "expenses" %}
+{% include "_group_nav.html.j2" %}
+
+<section class="card card-elevated">
+  <div class="card-header-row">
+    <div>
+      <h2 class="card-heading">{{ t("expense.list.title") }}</h2>
+      <p class="muted">
+        Showing <span id="expense-count" class="font-bold">{{ expenses|length }}</span> expenses
+        {% if expenses %}
+          · Total: <strong>{{ group.currency_symbol }}<span id="visible-total-amount">{% set total_minor = expenses|map(attribute='amount_minor')|sum %}{{ (total_minor / 100)|round(2) }}</span></strong>
+        {% endif %}
+      </p>
+    </div>
+    <a class="btn btn-primary" href="/groups/{{ group.id }}/expenses/new">
+      <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      {{ t("expense.create.title") }}
+    </a>
+  </div>
+
+  {% if expenses %}
+    <!-- Dynamic Search & Filter Controls -->
+    <div class="filter-controls">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input id="expense-search" type="search" placeholder="Filter by title, category, or amount..." class="input-modern search-input">
+      </div>
+
+      <div class="category-filter-pills" role="tablist" aria-label="Category filter">
+        <button type="button" class="category-pill active" data-category="all">All</button>
+        <button type="button" class="category-pill" data-category="food">🍽️ Food</button>
+        <button type="button" class="category-pill" data-category="transport">🚗 Transport</button>
+        <button type="button" class="category-pill" data-category="rent">🏠 Rent</button>
+        <button type="button" class="category-pill" data-category="utilities">💡 Utilities</button>
+        <button type="button" class="category-pill" data-category="trip">✈️ Trip</button>
+        <button type="button" class="category-pill" data-category="other">🏷️ Other</button>
+      </div>
+    </div>
+
+    <ul class="expense-list" id="expense-items-list">
+      {% for e in expenses %}
+        <li class="expense-item {% if e.deleted_at %}expense-deleted{% endif %}" 
+            data-title="{{ e.title|e }}" 
+            data-category="{{ e.category|lower }}" 
+            data-amount-minor="{{ e.amount_minor }}">
+          <div class="expense-main">
+            <div class="expense-category-icon cat-{{ e.category|lower }}">
+              {% if e.category|lower == 'food' %}🍽️
+              {% elif e.category|lower == 'transport' %}🚗
+              {% elif e.category|lower == 'rent' %}🏠
+              {% elif e.category|lower == 'utilities' %}💡
+              {% elif e.category|lower == 'trip' %}✈️
+              {% else %}🏷️{% endif %}
+            </div>
+            <div class="expense-details">
+              <div class="expense-title-row">
+                <a href="/groups/{{ group.id }}/expenses/{{ e.id }}" class="expense-title-link">
+                  <strong>{{ e.title|e }}</strong>
+                </a>
+                {% if e.deleted_at %}
+                  <span class="badge badge-danger">deleted</span>
+                {% endif %}
+              </div>
+              <div class="expense-meta">
+                <span>{{ e.occurred_on }}</span>
+                <span class="meta-dot">·</span>
+                <span class="badge badge-subtle">{{ e.category }}</span>
+                {% if e.note %}
+                  <span class="meta-dot">·</span>
+                  <span class="expense-note-preview">{{ e.note|e }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="expense-side">
+            <span class="expense-amount">{{ format_amount(e.amount_minor, group.currency_symbol) }}</span>
+            <div class="expense-actions">
+              {% if not e.deleted_at and (current_member.is_admin or current_member.id == e.creator_id) %}
+                <form method="post" action="/groups/{{ group.id }}/expenses/{{ e.id }}/delete">
+                  <button class="btn btn-subtle btn-xs btn-subtle-danger" type="submit" title="Delete expense">
+                    <svg class="icon-xs" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    delete
+                  </button>
+                </form>
+              {% endif %}
+              {% if e.deleted_at and current_member.is_admin %}
+                <form method="post" action="/groups/{{ group.id }}/expenses/{{ e.id }}/restore">
+                  <button class="btn btn-subtle btn-xs" type="submit" title="Restore expense">
+                    <svg class="icon-xs" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="1 4 1 10 7 10"></polyline>
+                      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    </svg>
+                    restore
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        </li>
+      {% endfor %}
     </ul>
+
+    <div id="no-filter-results" class="empty-state-small" style="display:none">
+      <p class="muted">No expenses match your search or filter.</p>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🧾</div>
+      <h3>No expenses yet</h3>
+      <p class="muted">Start tracking shared costs by adding the first expense for this group.</p>
+      <a class="btn btn-primary" href="/groups/{{ group.id }}/expenses/new">
+        {{ t("expense.create.title") }} →
+      </a>
+    </div>
   {% endif %}
 </section>

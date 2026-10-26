@@ -41,6 +41,9 @@ def _html(content: str, *, lang: str, title: str = "", status_code: int = 200) -
 def settle_index(
     group_id: int,
     request: Request,
+    from_id: str = "",
+    to_id: str = "",
+    amount: str = "",
     session: Session = Depends(get_session),
     group_member: tuple[Group, Member] = Depends(require_member),
 ) -> HTMLResponse:
@@ -63,7 +66,7 @@ def settle_index(
             "methods": [m.value for m in SettlementMethod],
             "today": date.today().isoformat(),
             "errors": {},
-            "values": {},
+            "values": {"from_id": from_id, "to_id": to_id, "amount": amount},
             "format_amount": format_amount,
             "t": t,
         },

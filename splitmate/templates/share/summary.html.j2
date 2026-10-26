@@ -1,11 +1,54 @@
-<section class="card">
-  <h1>{{ t("share.title") }} — {{ group.name }}</h1>
-  <p>
-    <a class="btn" href="/groups/{{ group.id }}/summary.txt">{{ t("share.copy_summary") }} (.txt)</a>
-    <a class="btn secondary" href="/groups/{{ group.id }}/expenses.csv">{{ t("share.csv") }} (expenses)</a>
-    <a class="btn secondary" href="/groups/{{ group.id }}/settlements.csv">{{ t("share.csv") }} (settlements)</a>
-  </p>
-  <pre id="summary" class="codeblock">{{ summary_text|e }}</pre>
-  <button id="copy-summary-btn" type="button" class="btn secondary" data-label="{{ t("share.copy_summary") }}">{{ t("share.copy_summary") }}</button>
+{% set t = t %}
+{% set active_tab = "share" %}
+{% include "_group_nav.html.j2" %}
+
+<section class="card card-elevated">
+  <div class="card-header-row">
+    <div>
+      <h2 class="card-heading">{{ t("share.title") }} & Export</h2>
+      <p class="muted">Share a complete group summary or export transaction logs as CSV.</p>
+    </div>
+    <div class="row">
+      <a class="btn btn-secondary btn-sm" href="/groups/{{ group.id }}/summary.txt">
+        <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+        Summary (.txt)
+      </a>
+      <a class="btn btn-secondary btn-sm" href="/groups/{{ group.id }}/expenses.csv">
+        <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Expenses (CSV)
+      </a>
+      <a class="btn btn-secondary btn-sm" href="/groups/{{ group.id }}/settlements.csv">
+        <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Settlements (CSV)
+      </a>
+    </div>
+  </div>
+
+  <div class="summary-preview-box">
+    <div class="summary-preview-topbar">
+      <span class="summary-preview-label">Plain Text Summary</span>
+      <button id="copy-summary-btn" type="button" class="btn btn-primary btn-sm" data-label="{{ t("share.copy_summary") }}">
+        <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span>{{ t("share.copy_summary") }}</span>
+      </button>
+    </div>
+    <pre id="summary" class="codeblock">{{ summary_text|e }}</pre>
+  </div>
   <script type="module" src="/static/js/copy_summary.js" defer></script>
 </section>

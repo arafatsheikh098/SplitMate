@@ -38,7 +38,7 @@ def activity(
     group_member: tuple[Group, Member] = Depends(require_member),
 ) -> HTMLResponse:
     lang = get_lang(request)
-    group, _ = group_member
+    group, member = group_member
     activities = list_activity(
         session, group_id=group_id, page=page, page_size=page_size
     )
@@ -50,6 +50,7 @@ def activity(
         {
             "lang": lang,
             "group": group,
+            "current_member": member,
             "activities": activities,
             "members_by_id": by_id,
             "page": page,

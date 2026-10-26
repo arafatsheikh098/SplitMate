@@ -1,28 +1,90 @@
-<section class="card">
-  <h1>{{ expense.title|e }} <span class="muted">{{ expense.occurred_on }}</span></h1>
-  <p class="muted">{{ expense.category }}{% if expense.note %} — {{ expense.note|e }}{% endif %}</p>
-  <p><strong>{{ format_amount(expense.amount_minor, group.currency_symbol) }}</strong></p>
-  <h2>{{ t("expense.payer_label") }}</h2>
-  <ul class="list">
-    {% for p in payers %}
-      <li>
-        <span>{{ members_by_id[p.member_id].display_name|e }}</span>
-        <span>{{ format_amount(p.amount_minor, group.currency_symbol) }}</span>
-      </li>
-    {% endfor %}
-  </ul>
-  <h2>{{ t("expense.split.title") }} ({{ t("expense.split." + expense.split_method) }})</h2>
-  <ul class="list">
-    {% for p in parts %}
-      <li>
-        <span>{{ members_by_id[p.member_id].display_name|e }}</span>
-        <span>{{ format_amount(p.amount_minor, group.currency_symbol) }}</span>
-      </li>
-    {% endfor %}
-  </ul>
-  {% if not expense.deleted_at and (current_member.is_admin or current_member.id == expense.creator_id) %}
-  <form method="post" action="/groups/{{ group.id }}/expenses/{{ expense.id }}/delete">
-    <button class="secondary" type="submit">delete</button>
-  </form>
-  {% endif %}
-</section>
+{% set t = t %}
+{% set active_tab = "expenses" %}
+{% include "_group_nav.html.j2" %}
+
+<div class="receipt-card-wrapper">
+  <section class="card card-elevated receipt-card">
+    <div class="receipt-header">
+      <div class="receipt-category-pill">
+        {% if expense.category|lower == 'food' %}🍽️ Food
+        {% elif expense.category|lower == 'transport' %}🚗 Transport
+        {% elif expense.category|lower == 'rent' %}🏠 Rent
+        {% elif expense.category|lower == 'utilities' %}💡 Utilities
+        {% elif expense.category|lower == 'trip' %}✈️ Trip
+        {% else %}🏷️ {{ expense.category }}{% endif %}
+      </div>
+      <h1 class="receipt-title">{{ expense.title|e }}</h1>
+      <div class="receipt-date">{{ expense.occurred_on }}</div>
+      <div class="receipt-amount-hero">
+        {{ format_amount(expense.amount_minor, group.currency_symbol) }}
+      </div>
+      {% if expense.note %}
+        <p class="receipt-note">"{{ expense.note|e }}"</p>
+      {% endif %}
+      {% if expense.deleted_at %}
+        <div class="receipt-deleted-notice">
+          <span class="badge badge-danger">Deleted on {{ expense.deleted_at }}</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="receipt-section">
+      <h3 class="receipt-subheading">
+        <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+          <line x1="2" y1="10" x2="22" y2="10"></line>
+        </svg>
+        <span>{{ t("expense.payer_label") }}</span>
+      </h3>
+      <ul class="breakdown-list">
+        {% for p in payers %}
+          <li class="breakdown-item">
+            <div class="breakdown-person">
+              <span class="avatar-circle-sm">{{ members_by_id[p.member_id].display_name[:1] | upper }}</span>
+              <strong>{{ members_by_id[p.member_id].display_name|e }}</strong>
+            </div>
+            <strong class="breakdown-amount">{{ format_amount(p.amount_minor, group.currency_symbol) }}</strong>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="receipt-section">
+      <h3 class="receipt-subheading">
+        <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="8.5" cy="7" r="4"></circle>
+          <line x1="18" y1="8" x2="23" y2="13"></line>
+          <line x1="23" y1="8" x2="18" y2="13"></line>
+        </svg>
+        <span>{{ t("expense.split.title") }} · <span class="badge badge-subtle">{{ t("expense.split." + expense.split_method) }}</span></span>
+      </h3>
+      <ul class="breakdown-list">
+        {% for p in parts %}
+          <li class="breakdown-item">
+            <div class="breakdown-person">
+              <span class="avatar-circle-sm">{{ members_by_id[p.member_id].display_name[:1] | upper }}</span>
+              <span>{{ members_by_id[p.member_id].display_name|e }}</span>
+            </div>
+            <span class="breakdown-amount">{{ format_amount(p.amount_minor, group.currency_symbol) }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="receipt-footer-actions">
+      <a class="btn btn-secondary" href="/groups/{{ group.id }}/expenses">← Back to expenses</a>
+      {% if not expense.deleted_at and (current_member.is_admin or current_member.id == expense.creator_id) %}
+        <form method="post" action="/groups/{{ group.id }}/expenses/{{ expense.id }}/delete">
+          <button class="btn btn-danger" type="submit">
+            <svg class="icon-xs" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            delete
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </section>
+</div>

@@ -1,8 +1,37 @@
 {% set t = t %}
-<section class="card">
-  <h1>{{ t("group.invite.title") }}</h1>
-  {% if rotated %}<p class="muted">rotated</p>{% endif %}
-  <p>Share this link to invite people:</p>
-  <p><code>/join/{{ invite }}</code></p>
-  <p><a class="btn" href="/groups/{{ group.id }}">{{ t("error.back_home") }}</a></p>
-</section>
+<div class="auth-card-wrapper">
+  <section class="card card-elevated auth-card text-center">
+    <div class="auth-icon-badge badge-success-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+    </div>
+
+    <h1 class="auth-title">
+      {% if rotated %}Invite Link Rotated{% else %}Group "{{ group.name }}" Ready!{% endif %}
+    </h1>
+    {% if rotated %}<p class="badge badge-warning">Old invite links have been deactivated</p>{% endif %}
+
+    <p class="muted">Share this invite link with your friends to let them join and split expenses:</p>
+
+    <div class="copy-box">
+      <div class="copy-input-group">
+        <code id="invite-code-display" class="copy-code-text">/join/{{ invite }}</code>
+        <button id="copy-invite-btn" type="button" class="btn btn-secondary btn-sm copy-btn" data-copy-target="#invite-code-display">
+          <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span>Copy link</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="auth-actions">
+      <a class="btn btn-primary btn-lg btn-block" href="/groups/{{ group.id }}">
+        Go to {{ group.name }} Dashboard →
+      </a>
+    </div>
+  </section>
+</div>

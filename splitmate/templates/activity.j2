@@ -1,30 +1,61 @@
-<section class="card">
-  <h1>{{ t("activity.title") }} — {{ group.name }}</h1>
+{% set t = t %}
+{% set active_tab = "activity" %}
+{% include "_group_nav.html.j2" %}
+
+<section class="card card-elevated">
+  <div class="card-header-row">
+    <div>
+      <h2 class="card-heading">{{ t("activity.title") }}</h2>
+      <p class="muted">Audit stream of every expense, settlement, and membership change in {{ group.name }}.</p>
+    </div>
+  </div>
+
   {% if not activities %}
-    <p class="muted">No activity yet.</p>
+    <div class="empty-state">
+      <div class="empty-icon">📜</div>
+      <h3>No activity yet</h3>
+      <p class="muted">Actions taken in this group will appear here in chronological order.</p>
+    </div>
   {% else %}
-    <ul class="list">
+    <div class="timeline-stream">
       {% for a in activities %}
-        <li>
-          <div>
-            <strong>{{ a.kind }}</strong>
-            {% if a.actor_id and members_by_id.get(a.actor_id) %}
-              <span class="muted">by {{ members_by_id[a.actor_id].display_name|e }}</span>
-            {% endif %}
-            <p>{{ a.summary|e }}</p>
+        <div class="timeline-event">
+          <div class="timeline-icon-node node-{{ a.kind }}">
+            {% if 'expense' in a.kind %}🧾
+            {% elif 'settlement' in a.kind %}💳
+            {% elif 'member' in a.kind %}👤
+            {% else %}📌{% endif %}
           </div>
-          <span class="muted">{{ a.created_at }}</span>
-        </li>
+          
+          <div class="timeline-card">
+            <div class="timeline-header">
+              <span class="timeline-kind-tag">{{ a.kind.replace('_', ' ') | title }}</span>
+              {% if a.actor_id and members_by_id.get(a.actor_id) %}
+                <span class="timeline-actor">by <strong>{{ members_by_id[a.actor_id].display_name|e }}</strong></span>
+              {% endif %}
+              <time class="timeline-time">{{ a.created_at.strftime('%Y-%m-%d %H:%M') if a.created_at.strftime else a.created_at }}</time>
+            </div>
+            <div class="timeline-summary">{{ a.summary|e }}</div>
+          </div>
+        </div>
       {% endfor %}
-    </ul>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-bar">
+      {% if page > 1 %}
+        <a class="btn btn-secondary btn-sm" href="?page={{ page - 1 }}&page_size={{ page_size }}">← Previous</a>
+      {% else %}
+        <span class="btn btn-secondary btn-sm btn-disabled">← Previous</span>
+      {% endif %}
+
+      <span class="pagination-info">Page <strong>{{ page }}</strong> of <strong>{{ (total + page_size - 1) // page_size if total > 0 else 1 }}</strong></span>
+
+      {% if page * page_size < total %}
+        <a class="btn btn-secondary btn-sm" href="?page={{ page + 1 }}&page_size={{ page_size }}">Next →</a>
+      {% else %}
+        <span class="btn btn-secondary btn-sm btn-disabled">Next →</span>
+      {% endif %}
+    </div>
   {% endif %}
-  <p>
-    {% if page > 1 %}
-      <a class="secondary" href="?page={{ page - 1 }}&page_size={{ page_size }}">‹ prev</a>
-    {% endif %}
-    <span class="muted">page {{ page }} of {{ (total + page_size - 1) // page_size }}</span>
-    {% if page * page_size < total %}
-      <a class="secondary" href="?page={{ page + 1 }}&page_size={{ page_size }}">next ›</a>
-    {% endif %}
-  </p>
 </section>

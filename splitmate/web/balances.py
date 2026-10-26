@@ -39,7 +39,7 @@ def balances(
     group_member: tuple[Group, Member] = Depends(require_member),
 ) -> HTMLResponse:
     lang = get_lang(request)
-    group, _ = group_member
+    group, member = group_member
     balances = group_balances(session, group_id=group_id)
     plan = settle_plan(balances)
     members = session.exec(
@@ -52,6 +52,7 @@ def balances(
         {
             "lang": lang,
             "group": group,
+            "current_member": member,
             "balances": balances,
             "plan": plan,
             "members_by_id": by_id,

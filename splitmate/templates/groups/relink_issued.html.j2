@@ -1,7 +1,33 @@
 {% set t = t %}
-<section class="card">
-  <h1>re-link code for {{ member.display_name }}</h1>
-  <p>Send this link to <strong>{{ member.display_name }}</strong> on their new device. It works once and expires in 24 hours.</p>
-  <p><code>/rejoin/{{ group.id }}/{{ code }}</code></p>
-  <p><a class="btn" href="/groups/{{ group.id }}">{{ t("error.back_home") }}</a></p>
-</section>
+<div class="auth-card-wrapper">
+  <section class="card card-elevated auth-card text-center">
+    <div class="auth-icon-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+      </svg>
+    </div>
+
+    <h1 class="auth-title">Re-link Code for {{ member.display_name }}</h1>
+    <p class="muted">Send this recovery link to <strong>{{ member.display_name }}</strong> on their new device. It works once and expires in 24 hours.</p>
+
+    <div class="copy-box">
+      <div class="copy-input-group">
+        <code id="relink-code-display" class="copy-code-text">/rejoin/{{ group.id }}/{{ code }}</code>
+        <button type="button" class="btn btn-secondary btn-sm copy-btn" data-copy-target="#relink-code-display">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span>Copy link</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="auth-actions">
+      <a class="btn btn-primary btn-block" href="/groups/{{ group.id }}">
+        {{ t("error.back_home") }} →
+      </a>
+    </div>
+  </section>
+</div>

@@ -36,7 +36,7 @@ def summary(
     group_member: tuple[Group, Member] = Depends(require_member),
 ) -> HTMLResponse:
     lang = get_lang(request)
-    group, _ = group_member
+    group, member = group_member
     sections = build_summary(session, group_id=group_id, lang=lang)
     summary_text = render_summary(sections)
     body = render(
@@ -44,6 +44,7 @@ def summary(
         {
             "lang": lang,
             "group": group,
+            "current_member": member,
             "summary_text": summary_text,
             "t": t,
         },

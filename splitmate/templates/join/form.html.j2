@@ -1,12 +1,40 @@
 {% set t = t %}
-<section class="card">
-  <h1>{{ t("group.join.title") }} — {{ group.name }}</h1>
-  <form method="post" action="/join/{{ token }}" class="col">
-    <label>
-      {{ t("group.join.name_label") }}
-      <input name="display_name" maxlength="60" required>
-    </label>
-    {% if errors.name %}<p class="error">{{ errors.name }}</p>{% endif %}
-    <p><button type="submit">{{ t("group.join.submit") }}</button></p>
-  </form>
-</section>
+<div class="auth-card-wrapper">
+  <section class="card card-elevated auth-card">
+    <div class="auth-card-header">
+      <div class="auth-icon-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="8.5" cy="7" r="4"></circle>
+          <polyline points="17 11 19 13 23 9"></polyline>
+        </svg>
+      </div>
+      <h1 class="auth-title">{{ t("group.join.title") }}</h1>
+      <p class="auth-subtitle">You were invited to join <strong>{{ group.name }}</strong> ({{ group.currency_symbol }}).</p>
+    </div>
+
+    {% if errors.name %}
+      <div class="alert alert-danger" role="alert">
+        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span class="error">{{ errors.name }}</span>
+      </div>
+    {% endif %}
+
+    <form method="post" action="/join/{{ token }}" class="modern-form">
+      <label class="form-group">
+        <span class="form-label">{{ t("group.join.name_label") }} <span class="required">*</span></span>
+        <input name="display_name" maxlength="60" required placeholder="Enter your display name" class="input-modern" autofocus>
+      </label>
+
+      <div class="form-actions-full">
+        <button type="submit" class="btn btn-primary btn-lg btn-block">
+          {{ t("group.join.submit") }} to {{ group.name }} →
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

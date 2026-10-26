@@ -75,21 +75,24 @@ def create_app() -> FastAPI:
 
     @app.get("/", include_in_schema=False)
     async def home(request: Request) -> HTMLResponse:
+        lang = _read_lang(request)
+        body = render(
+            "home.html.j2",
+            {
+                "lang": lang,
+                "request": request,
+                "t": t,
+            },
+        )
         return HTMLResponse(
             render(
                 "base.html.j2",
                 {
-                    "lang": _read_lang(request),
+                    "lang": lang,
                     "request": request,
                 },
-                block_title=t("app.title"),
-                content=(
-                    f"<section class='card'>"
-                    f"<h1>{t('app.title')}</h1>"
-                    f"<p>{t('app.tagline')}</p>"
-                    f"<p><a class='btn' href='/groups/new'>{t('nav.create_group')}</a></p>"
-                    f"</section>"
-                ),
+                block_title=t("app.title", lang=lang),
+                content=body,
             )
         )
 

@@ -1,73 +1,162 @@
-<section class="card">
-  <h1>{{ t("settle.title") }} — {{ group.name }}</h1>
-  {% if errors.form %}<p class="error">{{ errors.form }}</p>{% endif %}
-  <form method="post" action="/groups/{{ group.id }}/settle">
-    <label>
-      {{ t("settle.from") }}
-      <select name="from_id" required>
-        {% for m in members %}
-          <option value="{{ m.id }}" {% if values.from_id == m.id|string %}selected{% endif %}>{{ m.display_name|e }}</option>
-        {% endfor %}
-      </select>
+{% set t = t %}
+{% set active_tab = "settle" %}
+{% include "_group_nav.html.j2" %}
+
+<section class="card card-elevated form-card">
+  <div class="card-header-row">
+    <div>
+      <h2 class="card-heading">{{ t("settle.title") }}</h2>
+      <p class="muted">Record a direct money transfer between members to reduce shared balance.</p>
+    </div>
+  </div>
+
+  {% if errors.form %}
+    <div class="alert alert-danger" role="alert">
+      <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errors.form }}</span>
+    </div>
+  {% endif %}
+
+  <form method="post" action="/groups/{{ group.id }}/settle" class="modern-form">
+    <div class="form-grid-2">
+      <label class="form-group">
+        <span class="form-label">{{ t("settle.from") }} (Who paid) <span class="required">*</span></span>
+        <select name="from_id" required class="input-modern select-modern">
+          {% for m in members %}
+            <option value="{{ m.id }}" {% if values.from_id == m.id|string or (not values.from_id and current_member and m.id == current_member.id) %}selected{% endif %}>
+              {{ m.display_name|e }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="form-group">
+        <span class="form-label">{{ t("settle.to") }} (Who received) <span class="required">*</span></span>
+        <select name="to_id" required class="input-modern select-modern">
+          {% for m in members %}
+            <option value="{{ m.id }}" {% if values.to_id == m.id|string %}selected{% endif %}>
+              {{ m.display_name|e }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+
+    <div class="form-grid-3">
+      <label class="form-group">
+        <span class="form-label">{{ t("settle.method") }}</span>
+        <select name="method" class="input-modern select-modern">
+          {% for m in methods %}
+            <option value="{{ m }}" {% if values.method == m %}selected{% endif %}>
+              {% if m == 'bKash' %}📱 bKash
+              {% elif m == 'Nagad' %}📲 Nagad
+              {% elif m == 'cash' %}💵 Cash
+              {% elif m == 'bank' %}🏦 Bank transfer
+              {% else %}💳 {{ m }}{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="form-group">
+        <span class="form-label">{{ t("settle.date") }} <span class="required">*</span></span>
+        <input name="date_value" type="date" required value="{{ values.date|default(today) }}" class="input-modern">
+      </label>
+
+      <label class="form-group">
+        <span class="form-label">Amount ({{ group.currency_symbol }}) <span class="required">*</span></span>
+        <div class="input-with-prefix">
+          <span class="input-prefix">{{ group.currency_symbol }}</span>
+          <input name="amount" type="text" inputmode="decimal" required value="{{ values.amount|default('') }}" placeholder="0.00" class="input-modern input-amount">
+        </div>
+      </label>
+    </div>
+
+    <label class="form-group">
+      <span class="form-label">{{ t("settle.note") }}</span>
+      <input name="note" maxlength="300" value="{{ values.note|default('') }}" placeholder="Reference number or note (e.g. bKash TrxID #8ABC12)" class="input-modern">
     </label>
-    <label>
-      {{ t("settle.to") }}
-      <select name="to_id" required>
-        {% for m in members %}
-          <option value="{{ m.id }}" {% if values.to_id == m.id|string %}selected{% endif %}>{{ m.display_name|e }}</option>
-        {% endfor %}
-      </select>
-    </label>
-    <label>
-      {{ t("settle.method") }}
-      <select name="method">
-        {% for m in methods %}
-          <option value="{{ m }}" {% if values.method == m %}selected{% endif %}>{{ m }}</option>
-        {% endfor %}
-      </select>
-    </label>
-    <label>
-      {{ t("settle.date") }}
-      <input name="date_value" type="date" required value="{{ values.date|default(today) }}">
-    </label>
-    <label>
-      amount
-      <input name="amount" type="text" inputmode="decimal" required value="{{ values.amount|default('') }}">
-    </label>
-    <label>
-      {{ t("settle.note") }}
-      <input name="note" maxlength="300" value="{{ values.note|default('') }}">
-    </label>
-    <p>
-      <button type="submit">{{ t("settle.submit") }}</button>
-      <a class="secondary" href="/groups/{{ group.id }}/balances">cancel</a>
-    </p>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary btn-lg">
+        <svg class="icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        {{ t("settle.submit") }}
+      </button>
+      <a class="btn btn-secondary" href="/groups/{{ group.id }}/balances">Cancel</a>
+    </div>
   </form>
 </section>
 
-<section class="card">
-  <h2>Settlements</h2>
+<section class="card card-elevated">
+  <div class="card-header-row">
+    <div>
+      <h2 class="card-heading">Settlement History</h2>
+      <p class="muted">Record of all past debt settlements in this group.</p>
+    </div>
+  </div>
+
   {% if not settlements %}
-    <p class="muted">No settlements yet.</p>
+    <div class="empty-state-small">
+      <p class="muted">No settlements recorded yet.</p>
+    </div>
   {% else %}
-    <ul class="list">
+    <ul class="settlement-history-list">
       {% for s in settlements %}
-        <li>
-          <div>
-            <strong>{{ format_amount(s.amount_minor, group.currency_symbol) }}</strong>
-            <span class="muted">{{ s.method }} · {{ s.paid_on }}</span>
-            {% if s.deleted_at %}<span class="badge warn">deleted</span>{% endif %}
+        <li class="settlement-history-item {% if s.deleted_at %}settlement-deleted{% endif %}">
+          <div class="settlement-history-main">
+            <div class="settlement-icon-bubble">
+              {% if s.method == 'bKash' %}📱
+              {% elif s.method == 'Nagad' %}📲
+              {% elif s.method == 'cash' %}💵
+              {% elif s.method == 'bank' %}🏦
+              {% else %}💳{% endif %}
+            </div>
+            <div>
+              <div class="settlement-amount-line">
+                <strong class="settlement-amount">{{ format_amount(s.amount_minor, group.currency_symbol) }}</strong>
+                {% if s.deleted_at %}
+                  <span class="badge badge-danger">deleted</span>
+                {% endif %}
+              </div>
+              <div class="settlement-meta">
+                <span class="badge badge-subtle">{{ s.method }}</span>
+                <span class="meta-dot">·</span>
+                <span>{{ s.paid_on }}</span>
+                {% if s.note %}
+                  <span class="meta-dot">·</span>
+                  <span class="expense-note-preview">"{{ s.note|e }}"</span>
+                {% endif %}
+              </div>
+            </div>
           </div>
-          {% if not s.deleted_at and (current_member.is_admin or s.creator_id == current_member.id) %}
-          <form method="post" action="/groups/{{ group.id }}/settlements/{{ s.id }}/delete">
-            <button class="secondary" type="submit">delete</button>
-          </form>
-          {% endif %}
-          {% if s.deleted_at and current_member.is_admin %}
-          <form method="post" action="/groups/{{ group.id }}/settlements/{{ s.id }}/restore">
-            <button class="secondary" type="submit">restore</button>
-          </form>
-          {% endif %}
+
+          <div class="settlement-history-actions">
+            {% if not s.deleted_at and (current_member.is_admin or s.creator_id == current_member.id) %}
+              <form method="post" action="/groups/{{ group.id }}/settlements/{{ s.id }}/delete">
+                <button class="btn btn-subtle btn-xs btn-subtle-danger" type="submit" title="Delete settlement">
+                  <svg class="icon-xs" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  delete
+                </button>
+              </form>
+            {% endif %}
+            {% if s.deleted_at and current_member.is_admin %}
+              <form method="post" action="/groups/{{ group.id }}/settlements/{{ s.id }}/restore">
+                <button class="btn btn-subtle btn-xs" type="submit" title="Restore settlement">
+                  restore
+                </button>
+              </form>
+            {% endif %}
+          </div>
         </li>
       {% endfor %}
     </ul>
